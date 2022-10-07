@@ -40,6 +40,7 @@
         "moo": "^0.5.1",
         "murmurhash": "^2.0.0",
         "pbf": "^3.2.1",
+        "react-horizontal-scrolling-menu": "^3.2.0",
         "rxjs": "^7.5.5",
         "three": "^0.139.2",
         "three-csg-ts": "^3.1.10",

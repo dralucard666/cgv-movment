@@ -34,13 +34,13 @@ a {
 
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
-      -webkit-user-select: none; /* Safari */
-       -khtml-user-select: none; /* Konqueror HTML */
-         -moz-user-select: none; /* Old versions of Firefox */
-          -ms-user-select: none; /* Internet Explorer/Edge */
-              user-select: none; /* Non-prefixed version, currently
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
                                     supported by Chrome, Edge, Opera and Firefox */
-  }
+}
 
 .hovered {
     @extend .bg-hovered;
@@ -79,9 +79,13 @@ a {
         max-height: unset;
         max-width: 35%;
     }
-    
 }
 
-.scroll {
-    overflow: hidden auto;
+div.table-scroll {
+    margin: 4px, 4px;
+    padding: 4px;
+    background-color: #202024;
+    overflow-x: auto;
+    overflow-y: auto;
+    white-space: nowrap;
 }

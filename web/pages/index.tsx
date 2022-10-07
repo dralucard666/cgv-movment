@@ -37,6 +37,8 @@ import Slider from "../src/domains/movement/slider"
 import shallow from "zustand/shallow"
 import MovementLogic from "../src/domains/movement/movementLogic"
 import { useRouter } from "next/router"
+import { TimeEdit } from "../src/domains/movement/TimeEdit/timeEdit"
+import { TimeEditToggle } from "../src/domains/movement/TimeEdit/TimeEditToggle"
 
 const zoom = 18
 const globalLocalRatio = tileZoomRatio(0, zoom)
@@ -63,7 +65,8 @@ export default function Movement() {
                 Viewer={Viewer}
                 operationGuiMap={{}}
                 operations={operations}>
-                <Editor />
+                {/*  <Editor /> */}
+                <TimeEdit />
             </DomainProvider>
         </>
     )
@@ -254,6 +257,7 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         <div className="flex-grow-1"></div>
                         <div className="d-flex flex-row" style={{ pointerEvents: "all" }}>
                             <TextEditorToggle className="me-2" />
+                            <TimeEditToggle className="me-2" />
                             {/*<FullscreenToggle rootRef={null} />*/}
                         </div>
                     </div>

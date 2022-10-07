@@ -61,6 +61,7 @@ export type BaseState = (CombineEmpty<GuiState, TuiState> | CombineEmpty<TuiStat
     descriptions: Array<{ seed: number; name: string }>
     selectedDescriptions: Array<string>
     showTui: boolean
+    showTe: boolean
 }
 
 export type CombineEmpty<T, K> = T & {
@@ -122,6 +123,7 @@ function createBaseStateInitial(): BaseState {
         requested: undefined,
         shift: false,
         showTui: false,
+        showTe: false,
         graphVisualization: false,
     }
 }
@@ -195,6 +197,9 @@ function createBaseStateFunctions(
         },
         setShowTui: (showTui: boolean) => {
             set({ showTui })
+        },
+        setShowTe: (showTe: boolean) => {
+            set({ showTe })
         },
         selectDescription: (name: string, shift: boolean) => {
             const state = get()
