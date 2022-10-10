@@ -4,6 +4,7 @@ import { useBaseStore, useBaseStoreState } from "./global"
 import { useBaseGlobal } from "./global"
 import { Dialogs } from "./gui/dialogs"
 import { Graph } from "./graph"
+import { TimeEdit } from "./domains/movement/TimeEdit/timeEdit"
 
 export function Editor() {
     const store = useBaseStore()
@@ -41,19 +42,25 @@ export function Editor() {
     }, [store])
 
     const { Viewer } = useBaseGlobal()
+    const showTimEdit = useBaseStoreState((state) => state.showTe)
 
     return (
-        <div
-            className="d-flex responsive-flex-direction overflow-hidden position-absolute noselect"
-            style={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-            <Dialogs />
-            <Viewer
-                style={{ whiteSpace: "pre-line", top: 0, left: 0, right: 0, bottom: 0 }}
-                className="flex-basis-0 flex-grow-1 bg-white"
-            />
-
-            <RightHandSide />
-        </div>
+        <>
+            {showTimEdit ? (
+                <TimeEdit />
+            ) : (
+                <div
+                    className="d-flex responsive-flex-direction overflow-hidden position-absolute noselect"
+                    style={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                    <Dialogs />
+                    <Viewer
+                        style={{ whiteSpace: "pre-line", top: 0, left: 0, right: 0, bottom: 0 }}
+                        className="flex-basis-0 flex-grow-1 bg-white"
+                    />
+                    <RightHandSide />
+                </div>
+            )}
+        </>
     )
 }
 

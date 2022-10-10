@@ -66,7 +66,7 @@ export default function Movement() {
                 operationGuiMap={{}}
                 operations={operations}>
                 {/*  <Editor /> */}
-                <TimeEdit />
+                <Editor />
             </DomainProvider>
         </>
     )
