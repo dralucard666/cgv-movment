@@ -39,13 +39,21 @@ function computeStandStill(instance: MovingObject): Observable<Array<MovingObjec
 }
 
 function createObject(
-    instance: Primitive,
     position: Vector3,
     time: number,
     type: ObjectType,
     direction: Vector3
 ): Observable<Array<MovingObject>> {
-    return of([instance.createPrimitive(position, time, direction, type)])
+    return of([new MovingObject([{ position, time, direction } as ObjectPosition], type, [], [], null)])
+}
+
+function createObjectOfPrimitive(
+    instance: Primitive,
+    time: number,
+    type: ObjectType,
+    direction: Vector3
+): Observable<Array<MovingObject>> {
+    return of([instance.createMovementObject(time, direction, type)])
 }
 
 function computePoint3(x: number, y: number, z: number): Observable<Array<Vector3>> {
@@ -56,11 +64,19 @@ function distanceToStatic(instance: MovingObject): Observable<Array<Vector3>> {
     return of([instance.staticObjectAhead()])
 }
 
+function computeSample(amount: number): Observable<Array<Primitive>> {
+    const primitiveArray: Primitive[] = []
+    for (let index = 0; index < amount; index++) {
+        primitiveArray.push(new Primitive([], new Vector3(Math.random() * 500, 0, Math.random() * 500), [], null))
+    }
+    return of(primitiveArray)
+}
+
 export const operations: Operations<any> = {
     ...defaultOperations,
     createOb: {
         execute: simpleExecution<any>(createObject),
-        includeThis: true,
+        includeThis: false,
         defaultParameters: [
             () => ({
                 type: "operation",
@@ -71,6 +87,23 @@ export const operations: Operations<any> = {
                     { type: "raw", value: 0 },
                 ],
             }),
+            () => ({ type: "raw", value: 0 }),
+            () => ({ type: "raw", value: 0 }),
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 1 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
+        ],
+    },
+    createFromPrimitive: {
+        execute: simpleExecution<any>(createObjectOfPrimitive),
+        includeThis: true,
+        defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
             () => ({
@@ -127,5 +160,10 @@ export const operations: Operations<any> = {
         execute: simpleExecution<any>(distanceToStatic),
         includeThis: true,
         defaultParameters: [],
+    },
+    sample: {
+        execute: simpleExecution<any>(computeSample),
+        includeThis: false,
+        defaultParameters: [() => ({ type: "raw", value: 10 })],
     },
 }

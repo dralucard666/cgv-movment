@@ -26,7 +26,8 @@ import { operations } from "cgv/domains/movement/operations"
 import { ObjectPosition, ObjectType, Primitive, MovingObject } from "cgv/domains/movement/primitives"
 import { applyToObject3D } from "./apply-to-object"
 import { useMovementStore } from "./useMovementStore"
-
+import { Vector } from "three-csg-ts/lib/esm/Vector"
+import { useTimeEditStore } from "./TimeEdit/useTimeEditStore"
 /**
  *
  * @param p1
@@ -48,7 +49,7 @@ function pathStartsWith(p1: HierarchicalPath, p2: HierarchicalPath): boolean {
     return true
 }
 
-const defaultValue = new Primitive([])
+const defaultValue = new Primitive([], new Vector3(0, 0, 0), [], null)
 
 export function Descriptions() {
     const descriptions = useBaseStoreState((state) => state.descriptions, shallowEqual)
@@ -101,10 +102,38 @@ function useSimpleInterpretation(
         }
         const subscription = applyToObject3D(
             of(newdefaultValue).pipe(
+                map((v) => {
+                    useMovementStore.getState().data = []
+                    const index = useMovementStore.getState().treePath.findIndex((v) => v.key === name)
+                    if (index !== -1) {
+                        useMovementStore.getState().treePath.splice(index, 1)
+                    }
+                    return v
+                }),
                 toValue(),
                 interprete<Primitive, HierarchicalInfo>(description, operations, {
                     delay: store.getState().interpretationDelay,
                     seed,
+                    listeners: {
+                        onAfterStep: (step, value) => {
+                            if (step.type === "operation") {
+                                const identifier = step.identifier
+                                if (
+                                    identifier === "createOb" ||
+                                    identifier === "createFromPrimitive" ||
+                                    identifier === "moveRight" ||
+                                    identifier === "moveLeft" ||
+                                    identifier === "moveUp" ||
+                                    identifier === "moveDown" ||
+                                    identifier === "moveRotate" ||
+                                    identifier === "standStill" ||
+                                    identifier === "sample"
+                                ) {
+                                    value.raw.grammarSteps.push(step)
+                                }
+                            }
+                        },
+                    },
                 })
             ),
             name,
@@ -132,12 +161,15 @@ function useInterpretation(
     ref: RefObject<ReactNode & Object3D>
 ) {
     const store = useBaseStore()
+    const movementStore = useMovementStore()
     const world = useMovementStore((e) => e.world)
 
     useEffect(() => {
         if (ref.current == null || description == null) {
             return
         }
+        movementStore.setData(null)
+        useTimeEditStore.getState().treePath = []
         let subscription: Subscription | undefined
 
         const beforeValuesMap = new Map<ParsedSteps, Array<Value<Primitive>>>()
@@ -154,6 +186,14 @@ function useInterpretation(
         try {
             subscription = applyToObject3D(
                 of(newdefaultValue).pipe(
+                    map((v) => {
+                        useMovementStore.getState().data = []
+                        const index = useMovementStore.getState().treePath.findIndex((v) => v.key === name)
+                        if (index !== -1) {
+                            useMovementStore.getState().treePath.splice(index, 1)
+                        }
+                        return v
+                    }),
                     toValue(),
                     interprete<Primitive, HierarchicalInfo>(description, operations, {
                         delay: store.getState().interpretationDelay,
@@ -169,6 +209,43 @@ function useInterpretation(
                                         relation === HierarchicalRelation.Equal
                                     )
                                 })
+                                if (step.type === "operation") {
+                                    const identifier = step.identifier
+                                    if (
+                                        identifier === "createOb" ||
+                                        identifier === "createFromPrimitive" ||
+                                        identifier === "moveRight" ||
+                                        identifier === "moveLeft" ||
+                                        identifier === "moveUp" ||
+                                        identifier === "moveDown" ||
+                                        identifier === "moveRotate" ||
+                                        identifier === "standStill" ||
+                                        identifier === "sample"
+                                    ) {
+                                        value.raw.grammarSteps.push(step)
+                                        if (beforeValue?.raw.grammarSteps) {
+                                            const beforeGrammarSteps = beforeValue.raw.grammarSteps
+                                            const lastStep =
+                                                beforeGrammarSteps.length > 0
+                                                    ? beforeGrammarSteps[beforeGrammarSteps.length - 1]
+                                                    : null
+                                            if (lastStep) {
+                                                if (
+                                                    lastStep.path.length < step.path.length &&
+                                                    (step.path.length % 2 == 0
+                                                        ? step.path[step.path.length - 2] != 0
+                                                        : step.path[step.path.length - 1] != 0)
+                                                ) {
+                                                    //console.log(lastStep)
+                                                    value.raw.parallelParentStep = {
+                                                        time: value.raw.grammarSteps.length - 1,
+                                                        step: lastStep,
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                                 if (beforeValue != null) {
                                     afterStepSubject.next({
                                         steps: step,
@@ -272,7 +349,7 @@ function HighlightDescription({ description }: { description: string }) {
                     .reduce<Array<Object3D>>((prev, selections) => {
                         const before = selections.values[0]?.before.raw
                         const after = selections.values[0]?.after.raw
-
+                        /*                         console.log(selections)
                         if (typeof selections.steps != "string") {
                             if (selections.steps.type == "operation") {
                                 const nameOfOperation = selections.steps.identifier
@@ -287,7 +364,7 @@ function HighlightDescription({ description }: { description: string }) {
                                     }
                                 }
                             }
-                        }
+                        } */
                         return prev.concat(
                             selections.values
                                 .filter((value) => (value as any).object != null)

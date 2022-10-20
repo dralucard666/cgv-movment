@@ -75,6 +75,7 @@ export default function Movement() {
 const Objects = () => {
     const data = useMovementStore((store) => store.data)
     // const playActive = useMovementStore((store) => store.playActive)
+    console.log(data)
     return (
         <>
             {data
