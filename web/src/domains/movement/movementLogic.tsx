@@ -69,7 +69,6 @@ export default function MovementLogic(props: { id: string; data: movObject }) {
     const line = useRef<any>()
 
     const data = props.data
-    console.log(data)
 
     useEffect(() => {
         if (object.current && data.framePos.length > 0) {

@@ -24,7 +24,7 @@ export function applyToObject3D(
                 if (nameWithSplit) {
                     nameWithSplit = name + change.index[0]
                 }
-                const id = nameWithSplit + change.index.map((v) => "_" + v).join(",")
+                const id = name + change.index.map((v) => "_" + v).join(",")
                 const framePositions = formatToTimeData(data.position, startTime, endTime)
                 createTimeEditTree(nameWithSplit, id, useMovementStore, data, framePositions)
                 if (useMovementStore.getState().maxTime < endTime) {
@@ -54,17 +54,23 @@ function createTimeEditTree(
         pathTree.push({ key: name, children: {} } as PathNode)
     }
     let node = pathTree.find((v) => v.key == name) as PathNode
+    let sampleIndex = 0
     for (let index = 0; index < data.grammarSteps.length; index++) {
         const step = data.grammarSteps[index]
         const path = step.path.slice(1).toString()
-        const currentPos = framePositions[index]
-        if (path) {
+        const currentPos = framePositions[index - sampleIndex]
+
+        let operation = undefined
+        if (step.type == "operation") {
+            operation = { name: step.identifier, parameter: step.children }
+            if (operation.name === "sample") {
+                sampleIndex = 1
+            }
+        }
+
+        if (path && operation?.name !== "sample") {
             const newNode = node.children[path]
             if (!newNode) {
-                let operation = undefined
-                if (step.type == "operation") {
-                    operation = { name: step.identifier, parameter: step.children }
-                }
                 node.children = {
                     ...node.children,
                     [path]: {

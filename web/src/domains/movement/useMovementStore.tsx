@@ -203,9 +203,7 @@ function createRowData(treePath: PathNode[]): pathData[][] {
     const data: pathData[][] = []
 
     const printTreeData = (parentNode: PathNode, ancestorValues: pathData[]) => {
-        /*         console.log("neue rekursion")
-        console.log(parentNode)
-        console.log(ancestorValues) */
+
         let index = 0
         const onlyParentValue = parentNode.operation
             ? {
@@ -219,10 +217,9 @@ function createRowData(treePath: PathNode[]): pathData[][] {
             ancestorCopy.push(onlyParentValue)
         }
         //console.log(onlyParentValue)
-        //console.log(ancestorCopy)
         for (const [key, value] of Object.entries(parentNode.children)) {
             if (value.children && Object.keys(value.children).length !== 0) {
-                if (index == 0 && Object.keys(value.children).length > 1) {
+                if (index == 0) {
                     printTreeData(value, ancestorCopy)
                     index += 1
                 } else {
@@ -290,7 +287,7 @@ function movementData(paths: pathData[][]): movObject[] {
             data.push(newMovOb)
         }
     }
-    console.log(data)
+    //console.log(data)
     return data
 }
 

@@ -103,11 +103,7 @@ function useSimpleInterpretation(
         const subscription = applyToObject3D(
             of(newdefaultValue).pipe(
                 map((v) => {
-                    useMovementStore.getState().data = []
-                    const index = useMovementStore.getState().treePath.findIndex((v) => v.key === name)
-                    if (index !== -1) {
-                        useMovementStore.getState().treePath.splice(index, 1)
-                    }
+                    useMovementStore.getState().setTreePath([])
                     return v
                 }),
                 toValue(),
@@ -187,11 +183,7 @@ function useInterpretation(
             subscription = applyToObject3D(
                 of(newdefaultValue).pipe(
                     map((v) => {
-                        useMovementStore.getState().data = []
-                        const index = useMovementStore.getState().treePath.findIndex((v) => v.key === name)
-                        if (index !== -1) {
-                            useMovementStore.getState().treePath.splice(index, 1)
-                        }
+                        useMovementStore.getState().setTreePath([])
                         return v
                     }),
                     toValue(),
