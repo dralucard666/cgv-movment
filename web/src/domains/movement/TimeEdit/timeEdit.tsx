@@ -69,10 +69,16 @@ const EditTools = () => {
                 backgroundColor: "#202024",
             }}>
             <div className="row m-2" style={{ position: "absolute" }}>
-                <button style={{ width: "100px", height: "30px" }} onClick={() => addRow(1)}>
+                <button
+                    type="button"
+                    style={{ width: "100px", height: "30px" }}
+                    onClick={() => addRow(1)}
+                    className="btn btn-primary">
                     addRow
                 </button>
-                <span style={{ width: "200px", color: "red" }}>Set Column Size: {columnWidth * 100}%</span>
+                <span style={{ width: "200px", color: "red", paddingTop: "5px" }}>
+                    Set Column Size: {columnWidth * 100}%
+                </span>
                 <Slider
                     step={0.1}
                     min={0.1}
@@ -82,7 +88,7 @@ const EditTools = () => {
                     marks
                     sx={{
                         width: 100,
-                        color: "success.main",
+                        color: "#7f0000",
                     }}
                 />
             </div>
@@ -108,7 +114,7 @@ const HeaderColumn = (props: { time: number }) => {
 
 const HeaderRow = () => {
     const columnNumber = useTimeEditStore((state) => state.columnNumber)
-    const rowArray = Array.from(Array(columnNumber + 2).keys())
+    const rowArray = Array.from(Array(columnNumber + 1).keys())
     return (
         <div
             style={{
@@ -122,7 +128,7 @@ const HeaderRow = () => {
                     borderLeft: "5px inset #202024",
                     borderBottom: "5px inset #202024",
                 }}>
-                <div style={{ width: "150px" }}>//</div>
+                <div style={{ width: "150px" }}>Descriptions</div>
             </div>
             {rowArray.map((i) => {
                 return <HeaderColumn key={i} time={i} />
@@ -187,6 +193,10 @@ function Column(props: {
         }
     }
 
+    const setTime = () => {
+        useMovementStore.getState().setTime(props.time * standardTime)
+    }
+
     return (
         <div
             style={{
@@ -203,11 +213,9 @@ function Column(props: {
                     position: "relative",
                 }}>
                 {!data ? (
-                    <div className="d-flex justify-content-center" style={{ marginTop: "50px", position: "absolute" }}>
-                        <button onClick={addNewRule} type="button" className="btn btn-primary">
-                            Add new Rule
-                        </button>
-                    </div>
+                    <div
+                        className="d-flex justify-content-center"
+                        style={{ marginTop: "50px", position: "absolute" }}></div>
                 ) : (
                     <>
                         <div

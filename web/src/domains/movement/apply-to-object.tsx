@@ -30,7 +30,7 @@ export function applyToObject3D(
                 const framePositions = formatToTimeData(data.position, startTime, endTime)
                 createTimeEditTree(nameWithSplit, id, useMovementStore, data, framePositions)
                 if (useMovementStore.getState().maxTime <= endTime) {
-                    useMovementStore.getState().setMaxTime(endTime + 1)
+                    useMovementStore.getState().setMaxTime(endTime)
                 }
                 if (useMovementStore.getState().minTime > startTime) {
                     useMovementStore.getState().setMinTime(startTime)

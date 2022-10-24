@@ -70,7 +70,7 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
             const arrayIndex = currentTime - data.startT
             const currentLine = data.framePos[arrayIndex]
             const direction = currentLine.direction
-            if (currentLine.position && object.current && line.current && direction && playActive) {
+            if (currentLine.position && object.current && line.current && direction) {
                 object.current.showObject()
                 line.current.visible = true
                 text.current.showText()
@@ -80,7 +80,13 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
                 const positionZ = currentLine.position[2]
 
                 const angle = -Math.atan2(direction[2], direction[0]) + rotationY
-                object.current.updatePosition(positionX, positionY, positionZ, angle, delta)
+                object.current.updatePosition(
+                    positionX,
+                    positionY,
+                    positionZ,
+                    angle,
+                    playActive ? delta : Math.random()
+                )
                 text.current.updatePosition(positionX + textMarginX, positionY + textMarginY, positionZ)
                 /*                 if (isMarked) {
                     marker.current.updatePosition(positionX, positionY, positionZ)
@@ -97,6 +103,7 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
                 )
             }
         } else {
+            console.log('hier ist text')
             if (object.current && line.current && text.current) {
                 object.current.hideObject()
                 line.current.visible = false

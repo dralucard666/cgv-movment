@@ -34,7 +34,7 @@ export interface PathNode {
 
 export const useTimeEditStore = create<TimeEditState>((set, get) => ({
     treePath: [],
-    columnNumber: 5,
+    columnNumber: 20,
     setColumnNumber: (length: number) =>
         set((state) => {
             return { columnNumber: length }

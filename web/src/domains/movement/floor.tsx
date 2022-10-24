@@ -9,7 +9,7 @@ import { WorldState } from "./movementData"
 
 export default function Floor(props: { world: WorldState }) {
     const [colorMfloorNormalTexture] = useTexture(["./textures/dirt/normal.jpg"])
-    const [colorMap] = useTexture(["./textures/dirt/studentsreference.png"])
+    const [colorMap] = useTexture(["./textures/dirt/hotelreference.png"])
     colorMap.rotation = Math.PI
     colorMap.encoding = THREE.sRGBEncoding
     colorMap.wrapS = THREE.RepeatWrapping

@@ -79,32 +79,19 @@ export function Editor() {
     )
 }
 
-const EditTools = () => {
-    return (
-        <div
-            style={{
-                width: "200%",
-                height: "30px",
-                backgroundColor: "#202024",
-                zIndex: "10",
-                marginTop: "-10",
-            }}>
-            <button>addRow</button>
-        </div>
-    )
-}
-
 function RightHandSide() {
     const Component = useBaseStoreState((state) =>
         !state.showTui ? undefined : state.type === "tui" ? TextEditor : state.graphVisualization ? Graph : Grammar
     )
+    const showTimEdit = useBaseStoreState((state) => state.showTe)
 
     if (Component == null) {
         return null
     }
 
     return (
-        <div className="max-responsive-size-35 scroll text-editor text-light flex-basis-0 flex-grow-1 bg-dark d-flex">
+        <div
+            className="max-responsive-size-35 scroll text-editor text-light flex-basis-0 flex-grow-1 bg-dark d-flex">
             <Component />
         </div>
     )
