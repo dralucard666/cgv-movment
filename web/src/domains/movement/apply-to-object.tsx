@@ -13,7 +13,7 @@ export function applyToObject3D(
     object: Object3D,
     toObject: (value: Value<Primitive>) => Object3D,
     onError: (error: any) => void,
-    setLoadingState: (bool:boolean) => void
+    setLoadingState: (bool: boolean) => void
 ): Subscription {
     return input.subscribe({
         next: (change) => {
@@ -30,7 +30,7 @@ export function applyToObject3D(
                 const framePositions = formatToTimeData(data.position, startTime, endTime)
                 createTimeEditTree(nameWithSplit, id, useMovementStore, data, framePositions)
                 if (useMovementStore.getState().maxTime <= endTime) {
-                    useMovementStore.getState().setMaxTime(endTime)
+                    useMovementStore.getState().setMaxTime(endTime + 1)
                 }
                 if (useMovementStore.getState().minTime > startTime) {
                     useMovementStore.getState().setMinTime(startTime)
@@ -38,7 +38,8 @@ export function applyToObject3D(
             } else {
                 const pathTree = useMovementStore.getState().treePath
                 pathTree.push({
-                    key: name, children: {},
+                    key: name,
+                    children: {},
                 } as PathNode)
             }
             setLoadingState(false)

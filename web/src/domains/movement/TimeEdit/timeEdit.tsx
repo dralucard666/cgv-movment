@@ -15,6 +15,7 @@ import { framePositions, movObject, useMovementStore } from "../useMovementStore
 import { frameData, initRowNumber, pathData, PathNode, useTimeEditStore } from "./useTimeEditStore"
 import { AbstractParsedParallel } from "cgv/parser"
 import { Slider } from "@mui/material"
+import { requestAdd } from "../../../gui"
 export function TimeEdit() {
     const data = useMovementStore((state) => state.rowData)
     const setRowNumber = useTimeEditStore((state) => state.setRowNumber)
@@ -107,7 +108,7 @@ const HeaderColumn = (props: { time: number }) => {
                 borderBottom: "5px inset #202024",
             }}
             className="text-center">
-            <div style={{ width: columnWidth * 800 }}>Time: {props.time}</div>
+            <div style={{ width: columnWidth * 800 }}>Step: {props.time}</div>
         </div>
     )
 }
@@ -152,11 +153,15 @@ function Column(props: {
 }) {
     const data = props.data
     const store = useBaseStore()
-    const [isSelected, setIsSelected] = useState(false)
+    const initTime = useMovementStore.getState().time
+    const [isSelected, setIsSelected] = useState(
+        props.time * standardTime <= initTime && initTime < (props.time + 1) * standardTime
+    )
     useMovementStore.subscribe((state) => updateTime(state.time))
     const columnWidth = useTimeEditStore((e) => e.columnWidth)
 
     const updateTime = (stateTime: number) => {
+        console.log("hier ist was")
         if (props.time * standardTime <= stateTime && stateTime < (props.time + 1) * standardTime) {
             if (!isSelected) {
                 setIsSelected(true)
@@ -193,8 +198,21 @@ function Column(props: {
         }
     }
 
-    const setTime = () => {
-        useMovementStore.getState().setTime(props.time * standardTime)
+    const addAfter = () => {
+        if (data && data?.operation) {
+            console.log("kommen hier rein")
+            store.getState().select(
+                {
+                    path: data.path,
+                    type: "operation",
+                    identifier: data.operation.name,
+                    children: data.operation.parameter,
+                } as SelectedSteps,
+                undefined,
+                "replace"
+            )
+            requestAdd(store, "after")
+        }
     }
 
     return (
@@ -222,7 +240,7 @@ function Column(props: {
                             style={{
                                 marginTop: "50px",
                                 marginLeft:
-                                    columnWidth > 0.4
+                                    columnWidth > 0.5
                                         ? "40%"
                                         : columnWidth > 0.4
                                         ? "50%"
@@ -230,14 +248,24 @@ function Column(props: {
                                         ? "50%"
                                         : "20%",
                                 position: "absolute",
-                            }}>
-                            <div className="container">
-                                {columnWidth > 0.1
-                                    ? ObjectText(data.type, data.position ?? [0, 0, 0], data.direction ?? [0, 0, 0])
-                                    : null}
+                            }}
+                            onClick={selectRule}>
+                            <div className="row">
+                                <div className="container" onClick={selectRule}>
+                                    {columnWidth > 0.1
+                                        ? ObjectText(data.type, data.position ?? [0, 0, 0], data.direction ?? [0, 0, 0])
+                                        : null}
+                                </div>
+                                <button
+                                    type="button"
+                                    style={{ width: "70px", height: "40px", marginTop: "10px" }}
+                                    onClick={addAfter}
+                                    className="btn btn-secondary">
+                                    +After
+                                </button>
                             </div>
                         </div>
-                        {data.operation && columnWidth > 0.2 ? (
+                        {data.operation && columnWidth > 0.3 ? (
                             <div
                                 style={{
                                     position: "absolute",
@@ -245,6 +273,7 @@ function Column(props: {
                                     marginLeft: -20,
                                     marginTop: 70,
                                     width: columnWidth * 200,
+                                    fontSize: columnWidth > 0.6 ? "20px" : "16px",
                                 }}
                                 onClick={selectRule}
                                 className="box">
@@ -276,7 +305,7 @@ function childrenArrayToString(children: AbstractParsedSteps<HierarchicalInfo>[]
 
 function Row(props: { key: number; data?: pathData[] }) {
     const data = props.data
-    const descriptionName = data ? data[0].name : undefined
+    const descriptionName = data ? data[0].name.replace('Start@','') : undefined
     const startT = data ? data[0].time ?? 0 : 0
     const endT = data ? data[data.length - 1].time ?? 1 : 0
     const columnNumber = useTimeEditStore((state) => state.columnNumber)
@@ -295,7 +324,7 @@ function Row(props: { key: number; data?: pathData[] }) {
                     borderBottom: "5px inset #202024",
                 }}>
                 <div style={{ position: "relative", height: "200px", width: "150px" }}>
-                    <div style={{ position: "absolute", paddingTop: 90 }}>
+                    <div style={{ position: "absolute", paddingTop: 90, paddingLeft: 20 }}>
                         {descriptionName ? descriptionName : "add Description"}
                     </div>
                 </div>
@@ -328,7 +357,10 @@ function Row(props: { key: number; data?: pathData[] }) {
     )
 }
 
-function ObjectText(type: ObjectType, position: number[], direction: number[]) {
+function ObjectText(type: ObjectType, position2: number[], direction2: number[]) {
+    const position = position2.map((v) => Math.round(v))
+    const direction = direction2.map((v) => Math.round(v))
+
     switch (type) {
         case ObjectType.Cyclist:
             return (

@@ -202,7 +202,7 @@ function movementData(paths: pathData[][]): movObject[] {
                         new Vector3(...newPos),
                         pathItems.direction ? new Vector3(...pathItems.direction) : new Vector3(0, 0, 0),
                         lastPos.time,
-                        pathItems.time * 20
+                        pathItems.time * standardTime
                     )
                     newMovOb.framePos.push(...newTimeSteps)
                 }

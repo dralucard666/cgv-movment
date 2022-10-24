@@ -39,7 +39,8 @@ export function childrenSelectable(operationGuiMap: OperationGUIMap, steps: Sele
     return typeof steps == "string" || steps.type !== "operation" || operationGuiMap[steps.identifier] == null
 }
 
-function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "after") {
+export function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "after") {
+    console.log("hier sind wir")
     store
         .getState()
         .request(

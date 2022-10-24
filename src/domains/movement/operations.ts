@@ -67,7 +67,9 @@ function distanceToStatic(instance: MovingObject): Observable<Array<Vector3>> {
 function computeSample(amount: number): Observable<Array<Primitive>> {
     const primitiveArray: Primitive[] = []
     for (let index = 0; index < amount; index++) {
-        primitiveArray.push(new Primitive([], new Vector3(Math.random() * 500, 0, Math.random() * 500), [], null))
+        primitiveArray.push(
+            new Primitive([], new Vector3(Math.random() * 600 - 250, 0, Math.random() * 600 - 350), [], null)
+        )
     }
     return of(primitiveArray)
 }
@@ -129,27 +131,27 @@ export const operations: Operations<any> = {
     moveRight: {
         execute: simpleExecution<any>(computeMoveRight),
         includeThis: true,
-        defaultParameters: [() => ({ type: "raw", value: 10 })],
+        defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveLeft: {
         execute: simpleExecution<any>(computeMoveLeft),
         includeThis: true,
-        defaultParameters: [() => ({ type: "raw", value: 10 })],
+        defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveUp: {
         execute: simpleExecution<any>(computeMoveUp),
         includeThis: true,
-        defaultParameters: [() => ({ type: "raw", value: 10 })],
+        defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveDown: {
         execute: simpleExecution<any>(computeMoveDown),
         includeThis: true,
-        defaultParameters: [() => ({ type: "raw", value: 10 })],
+        defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveRotate: {
         execute: simpleExecution<any>(computeMoveRotate),
         includeThis: true,
-        defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 100 })],
+        defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 50 })],
     },
     standStill: {
         execute: simpleExecution<any>(computeStandStill),

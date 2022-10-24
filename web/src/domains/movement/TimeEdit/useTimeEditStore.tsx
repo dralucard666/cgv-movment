@@ -53,7 +53,7 @@ export const useTimeEditStore = create<TimeEditState>((set, get) => ({
         set((state) => {
             return { rowNumber: length }
         }),
-    columnWidth: 1,
+    columnWidth: 0.6,
     setColumnWidth: (length: number) =>
         set((state) => {
             return { columnWidth: length }

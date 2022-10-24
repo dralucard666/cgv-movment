@@ -103,7 +103,6 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
                 )
             }
         } else {
-            console.log('hier ist text')
             if (object.current && line.current && text.current) {
                 object.current.hideObject()
                 line.current.visible = false

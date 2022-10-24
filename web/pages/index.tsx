@@ -314,7 +314,7 @@ const Clock = () => {
     const maxTime = useMovementStore((e) => e.maxTime)
 
     useFrame(({ clock }) => {
-        if (useMovementStore.getState().getPlayActive() && useMovementStore.getState().time < maxTime) {
+        if (useMovementStore.getState().getPlayActive() && useMovementStore.getState().time+1 < maxTime) {
             useMovementStore.getState().incrementTime(1)
         }
     })

@@ -10,7 +10,7 @@ export enum ObjectType {
     Car,
 }
 
-export const standardTime = 20
+export const standardTime = 40
 export const standardSteps = 1
 
 export interface ObjectPosition {
