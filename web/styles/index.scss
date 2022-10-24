@@ -89,3 +89,51 @@ div.table-scroll {
     overflow-y: auto;
     white-space: nowrap;
 }
+
+.box {
+    height: 50px;
+    background: white;
+    text-align: center;
+    color: black;
+    font-size: 20px;
+    position: relative;
+    display: table;
+    border-left: 2px solid white;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+}
+
+.box span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.box:before,
+.box:after {
+    content: "";
+    position: absolute;
+}
+
+.box:after {
+    border-left: 40px solid white;
+    border-right: 40px solid transparent;
+    border-top: 40px solid transparent;
+    border-bottom: 40px solid transparent;
+    right: -80px;
+    top: -14px;
+    width: 0;
+    height: 0;
+    display: block;
+}
+
+.box:before {
+    border-left: 26px solid transparent;
+    border-right: 26px solid transparent;
+    border-top: 26px solid transparent;
+    border-bottom: 26px solid transparent;
+    left: 0px;
+    top: -1px;
+    width: 0;
+    height: 0;
+    display: block;
+}

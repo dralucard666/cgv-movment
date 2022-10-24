@@ -33,6 +33,11 @@ export function applyToObject3D(
                 if (useMovementStore.getState().minTime > startTime) {
                     useMovementStore.getState().setMinTime(startTime)
                 }
+            } else {
+                const pathTree = useMovementStore.getState().treePath
+                pathTree.push({
+                    key: name, children: {},
+                } as PathNode)
             }
             return
         },
@@ -88,7 +93,6 @@ function createTimeEditTree(
         }
     }
     useMovementStore.getState().setTreePath(pathTree)
-    const root = pathTree.find((v) => v.key == name) as PathNode
 }
 
 function formatToTimeData(data: ObjectPosition[], startTime: number, endTime: number): framePositions[] {

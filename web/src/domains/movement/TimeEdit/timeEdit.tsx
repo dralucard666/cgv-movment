@@ -9,131 +9,46 @@ import {
     shallowEqual,
 } from "cgv"
 import { ObjectType, standardTime } from "cgv/domains/movement"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useBaseGlobal, useBaseStore, useBaseStoreState } from "../../../global"
 import { framePositions, movObject, useMovementStore } from "../useMovementStore"
 import { frameData, initRowNumber, pathData, PathNode, useTimeEditStore } from "./useTimeEditStore"
 import { AbstractParsedParallel } from "cgv/parser"
+import { Slider } from "@mui/material"
 export function TimeEdit() {
-    /*     const descriptions = topDescriptions
-        .map((v) => {
-            const array = store(
-                (state) =>
-                    state.type === "gui" ? getLocalDescription(state.grammar, state.dependencyMap, v.name) : undefined,
-                shallowEqual
-            )
-            if (!array) {
-                return null
-            }
-            return array?.length > 0 ? array[0] : null
-        })
-        .filter((v) => v != null) as AbstractParsedNoun<HierarchicalInfo>[]
-    const grammarsInQueue: AbstractParsedSteps<HierarchicalInfo>[] = []
-    const clearedGrammars: AbstractParsedSteps<HierarchicalInfo>[] = []
-
-    descriptions.map((v) => {
-        const step = v.step
-        grammarsInQueue.push(step)
-        console.log(step)
-        while (grammarsInQueue.length > 0) {
-            const latestGrammarr = grammarsInQueue.pop()
-            const latestGrammar = structuredClone(latestGrammarr)
-            if (latestGrammar?.children) {
-                if (latestGrammar.type === "parallel") {
-                    for (const child of latestGrammar.children) {
-                        grammarsInQueue.push(child)
-                    }
-                } else if (latestGrammar.type === "sequential") {
-                    let onlySeq = true
-                    for (let index = 0; index < latestGrammar.children.length; index++) {
-                        const child = latestGrammar.children[index]
-                        if (child.type === "parallel") {
-                            onlySeq = false
-                            const saveChildChildren = structuredClone(child.children)
-                            for (const childchild of saveChildChildren) {
-                                latestGrammar.children[index] = childchild
-                                grammarsInQueue.push(structuredClone(latestGrammar))
-                            }
-                        }
-                    }
-                    if (onlySeq) {
-                        //console.log(latestGrammar)
-                        if (removeParallel(latestGrammar, latestGrammar)) {
-                            clearedGrammars.push(latestGrammar)
-                        }
-                    }
-                }
-            }
-        }
-        console.log(clearedGrammars)
-        return v
-    })
-
-    function removeParallel(
-        grammarTree: AbstractParsedSteps<HierarchicalInfo>,
-        currentNode: AbstractParsedSteps<HierarchicalInfo>
-    ): boolean {
-        //console.log("removeParallel")
-        //console.log(currentNode)
-        //console.log(grammarsInQueue)
-
-        if (currentNode.children) {
-            for (let index = 0; index < currentNode.children.length; index++) {
-                const saveChild = currentNode.children[index] as AbstractParsedSteps<HierarchicalInfo>
-                if (saveChild.children) {
-                    const saveChildChildren = structuredClone(
-                        saveChild.children
-                    ) as AbstractParsedSteps<HierarchicalInfo>[]
-                    if (saveChild.type === "parallel") {
-                        for (const child of saveChildChildren) {
-                            currentNode.children[index] = child
-                            grammarsInQueue.push(structuredClone(grammarTree))
-                        }
-                        return false
-                    } else if (saveChild.type === "sequential") {
-                        const hasonlySeq = removeParallel(grammarTree, saveChild)
-                        if (!hasonlySeq) {
-                            return false
-                        }
-                    }
-                }
-            }
-            return true
-        }
-        return true
-    }
-    console.log(descriptions) */
-
     const data = useMovementStore((state) => state.rowData)
-    //console.log(data)
-    //console.log(" hier sind die movementstore date")
-    //console.log(movementStoreData)
     const setRowNumber = useTimeEditStore((state) => state.setRowNumber)
     if (data.length > useTimeEditStore.getState().rowNumber) {
         setRowNumber(data.length)
     }
-    const rowNumber = useTimeEditStore.getState().rowNumber
-    //console.log(rowNumber)
-    //console.log(data.length)
-
-    //console.log(rowNumber)
-    //console.log(data.length)
+    const rowNumber = useTimeEditStore((state) => state.rowNumber)
 
     return (
         <>
-            <EditTools />
-            <div className="table-scroll" style={{ height: "40%" }}>
-                <HeaderRow />
-                {data
-                    ? data.map((v, i) => {
-                          return <Row key={i} data={v.length > 0 ? v : undefined} />
-                      })
-                    : null}
-                {rowNumber > data.length
-                    ? Array.from(Array(rowNumber - data.length).keys()).map((v) => {
-                          return <Row key={v + data.length} />
-                      })
-                    : null}
+            <div style={{ height: "12%" }}>
+                <EditTools />
+            </div>
+            <div style={{ height: "88%" }}>
+                <div
+                    style={{
+                        overflowX: "auto",
+                        overflowY: "auto",
+                        whiteSpace: "nowrap",
+                        padding: "4 4 4 4",
+                        height: "100%",
+                    }}>
+                    <HeaderRow />
+                    {data
+                        ? data.map((v, i) => {
+                              return <Row key={i} data={v.length > 0 ? v : undefined} />
+                          })
+                        : null}
+                    {rowNumber > data.length
+                        ? Array.from(Array(rowNumber - data.length).keys()).map((v) => {
+                              return <Row key={v + data.length} />
+                          })
+                        : null}
+                </div>
             </div>
         </>
     )
@@ -141,34 +56,52 @@ export function TimeEdit() {
 
 const EditTools = () => {
     const addRow = useTimeEditStore((state) => state.addRowNumber)
+    const columnWidth = useTimeEditStore((e) => e.columnWidth)
+
+    const handleChange = (event: any, newValue: any) => {
+        useTimeEditStore.getState().setColumnWidth(newValue)
+    }
+
     return (
         <div
             style={{
-                width: "200%",
-                height: "30px",
-                display: "block",
-                position: "fixed",
+                height: "100%",
                 backgroundColor: "#202024",
-                zIndex: "10",
-                marginTop: "-10",
             }}>
-            <button onClick={() => addRow(1)}>addRow</button>
+            <div className="row m-2" style={{ position: "absolute" }}>
+                <button style={{ width: "100px", height: "30px" }} onClick={() => addRow(1)}>
+                    addRow
+                </button>
+                <span style={{ width: "200px", color: "red" }}>Set Column Size: {columnWidth * 100}%</span>
+                <Slider
+                    step={0.1}
+                    min={0.1}
+                    max={1}
+                    value={columnWidth}
+                    onChangeCommitted={handleChange}
+                    marks
+                    sx={{
+                        width: 100,
+                        color: "success.main",
+                    }}
+                />
+            </div>
         </div>
     )
 }
 
 const HeaderColumn = (props: { time: number }) => {
+    const columnWidth = useTimeEditStore((e) => e.columnWidth)
     return (
         <div
             style={{
-                height: "30px",
-                width: "800px",
                 backgroundColor: "grey",
-                display: "inline-table",
-                border: "1px outset #202024",
+                display: "table-cell",
+                borderLeft: "5px inset #202024",
+                borderBottom: "5px inset #202024",
             }}
             className="text-center">
-            Time: {props.time}
+            <div style={{ width: columnWidth * 800 }}>Time: {props.time}</div>
         </div>
     )
 }
@@ -177,22 +110,24 @@ const HeaderRow = () => {
     const columnNumber = useTimeEditStore((state) => state.columnNumber)
     const rowArray = Array.from(Array(columnNumber + 2).keys())
     return (
-        <>
+        <div
+            style={{
+                height: "30px",
+                display: "table-row",
+            }}>
             <div
                 style={{
-                    height: "30px",
-                    width: "100px",
                     backgroundColor: "grey",
-                    display: "inline-table",
-                    border: "1px outset #202024",
-                    marginTop: "30px",
+                    display: "table-cell",
+                    borderLeft: "5px inset #202024",
+                    borderBottom: "5px inset #202024",
                 }}>
-                //
+                <div style={{ width: "150px" }}>//</div>
             </div>
             {rowArray.map((i) => {
                 return <HeaderColumn key={i} time={i} />
             })}
-        </>
+        </div>
     )
 }
 
@@ -211,11 +146,21 @@ function Column(props: {
 }) {
     const data = props.data
     const store = useBaseStore()
+    const [isSelected, setIsSelected] = useState(false)
+    useMovementStore.subscribe((state) => updateTime(state.time))
+    const columnWidth = useTimeEditStore((e) => e.columnWidth)
 
-    //console.log('anfang')
-    //store.getState().selectDescription(state?.descriptionName?.substring(6) ?? "", store.getState().shift ?? false)
-    //console.log(store.getState().selectedDescriptions)
-    // console.log('ende')
+    const updateTime = (stateTime: number) => {
+        if (props.time * standardTime <= stateTime && stateTime < (props.time + 1) * standardTime) {
+            if (!isSelected) {
+                setIsSelected(true)
+            }
+        } else {
+            if (isSelected) {
+                setIsSelected(false)
+            }
+        }
+    }
 
     const addNewRule = () => {
         if (data) {
@@ -223,60 +168,109 @@ function Column(props: {
         }
     }
 
+    const selectRule = () => {
+        useMovementStore.getState().setTime(props.time * standardTime)
+        console.log("selectRule")
+        console.log(data?.operation)
+        if (data && data?.operation) {
+            console.log("kommen hier rein")
+            store.getState().select(
+                {
+                    path: data.path,
+                    type: "operation",
+                    identifier: data.operation.name,
+                    children: data.operation.parameter,
+                } as SelectedSteps,
+                undefined,
+                "replace"
+            )
+        }
+    }
+
     return (
         <div
             style={{
-                height: "190px",
-                width: "800px",
-                backgroundColor: "#001c3d",
+                backgroundColor: isSelected ? "#bf5f4e" : "#001c3d",
                 color: "white",
-                display: "inline-table",
-                top: "0",
-                bottom: "0",
-                left: "0",
-                right: "0",
-                borderRight: "3px outset #202024",
-            }}
-            className="text-center">
-            {!data ? (
-                <div
-                    style={{
-                        position: "relative",
-                        inset: "80px 0 0 0",
-                    }}
-                    className="d-flex justify-content-center">
-                    <button onClick={addNewRule} type="button" className="btn btn-primary">
-                        Add new Rule
-                    </button>
-                </div>
-            ) : (
-                <div
-                    style={{
-                        position: "relative",
-                        inset: "80px 0 0 0",
-                    }}
-                    className="d-flex justify-content-center">
-                    <div>
-                        position:
-                        {data.position?.toString()}
-                        <br />
-                        time:
-                        {data.time}
-                        <br />
-                        type:
-                        {data.type?.toString()}
+                display: "table-cell",
+                borderLeft: "5px inset #202024",
+                borderBottom: "5px inset #202024",
+            }}>
+            <div
+                style={{
+                    width: columnWidth * 800,
+                    height: "200px",
+                    position: "relative",
+                }}>
+                {!data ? (
+                    <div className="d-flex justify-content-center" style={{ marginTop: "50px", position: "absolute" }}>
+                        <button onClick={addNewRule} type="button" className="btn btn-primary">
+                            Add new Rule
+                        </button>
                     </div>
-                </div>
-            )}
+                ) : (
+                    <>
+                        <div
+                            style={{
+                                marginTop: "50px",
+                                marginLeft:
+                                    columnWidth > 0.4
+                                        ? "40%"
+                                        : columnWidth > 0.4
+                                        ? "50%"
+                                        : columnWidth > 0.2
+                                        ? "50%"
+                                        : "20%",
+                                position: "absolute",
+                            }}>
+                            <div className="container">
+                                {columnWidth > 0.1
+                                    ? ObjectText(data.type, data.position ?? [0, 0, 0], data.direction ?? [0, 0, 0])
+                                    : null}
+                            </div>
+                        </div>
+                        {data.operation && columnWidth > 0.2 ? (
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    zIndex: 20,
+                                    marginLeft: -20,
+                                    marginTop: 70,
+                                    width: columnWidth * 200,
+                                }}
+                                onClick={selectRule}
+                                className="box">
+                                <span className="row">{columnWidth > 0.2 ? data.operation.name : ""}</span>
+                                {/*                                 {data.operation.parameter.map((v) => {
+                                    return (
+                                        <span className="row">
+                                            {v.type === "raw" ? v.value : childrenArrayToString(v.children)}
+                                        </span>
+                                    )
+                                })} */}
+                            </div>
+                        ) : (
+                            <div></div>
+                        )}
+                    </>
+                )}
+            </div>
         </div>
     )
+}
+
+function childrenArrayToString(children: AbstractParsedSteps<HierarchicalInfo>[] | undefined): string {
+    if (!children) {
+        return ""
+    }
+    return children.map((c) => (c.type === "raw" ? c.value : "")).toString()
 }
 
 function Row(props: { key: number; data?: pathData[] }) {
     const data = props.data
     const descriptionName = data ? data[0].name : undefined
-    const startT = (data ? data[0].time ?? 0 : 0)
-    const endT = (data ? data[data.length - 1].time ?? 1 : 0)
+    const startT = data ? data[0].time ?? 0 : 0
+    const endT = data ? data[data.length - 1].time ?? 1 : 0
     const columnNumber = useTimeEditStore((state) => state.columnNumber)
     const setColumnNumber = useTimeEditStore((state) => state.setColumnNumber)
     if (endT > columnNumber) {
@@ -287,13 +281,16 @@ function Row(props: { key: number; data?: pathData[] }) {
         <div>
             <div
                 style={{
-                    height: "200px",
-                    width: "100px",
                     backgroundColor: "grey",
-                    display: "inline-block",
-                    border: "1px outset #202024",
+                    display: "table-cell",
+                    borderLeft: "5px inset #202024",
+                    borderBottom: "5px inset #202024",
                 }}>
-                {descriptionName ? descriptionName : "add Description"}
+                <div style={{ position: "relative", height: "200px", width: "150px" }}>
+                    <div style={{ position: "absolute", paddingTop: 90 }}>
+                        {descriptionName ? descriptionName : "add Description"}
+                    </div>
+                </div>
             </div>
             {data ? (
                 <>
@@ -307,44 +304,55 @@ function Row(props: { key: number; data?: pathData[] }) {
                         return (
                             <Column
                                 descriptionName={descriptionName}
-                                key={i + endT}
-                                time={i + endT}
+                                key={i + endT + 1}
+                                time={i + endT + 1}
                                 showAddDescription={true}
                             />
                         )
                     })}
                 </>
             ) : (
-                Array.from(Array(columnNumber).keys()).map((i) => {
+                Array.from(Array(columnNumber + 1).keys()).map((i) => {
                     return <Column key={i} time={i} showAddDescription={true} />
                 })
             )}
-            <div
-                style={{
-                    height: "200px",
-                    width: "800px",
-                    backgroundColor: "#001c3d",
-                    display: "inline-table",
-                    border: "1px outset #202024",
-                }}>
-                <AddColumnButton />
-            </div>
         </div>
     )
 }
 
-const AddColumnButton = () => {
-    const addColumn = useTimeEditStore((state) => state.addColumnNumber)
-    return (
-        <div
-            style={{
-                position: "relative",
-                inset: "80px 0 0 0",
-            }}
-            className="d-flex justify-content-center">
-            <button type="button" className="btn btn-primary" onClick={() => addColumn(1)}>
-                +
-            </button>
-        </div>
-    )
+function ObjectText(type: ObjectType, position: number[], direction: number[]) {
+    switch (type) {
+        case ObjectType.Cyclist:
+            return (
+                <>
+                    <span className="row">Cyclist</span>
+                    <span className="row">Position: {position.toString()}</span>
+                    <span className="row">Direction: {direction.toString()}</span>
+                </>
+            )
+        case ObjectType.Pedestrian:
+            return (
+                <>
+                    <span className="row">Pedestrian</span>
+                    <span className="row">Position: {position.toString()}</span>
+                    <span className="row">Direction: {direction.toString()}</span>
+                </>
+            )
+        case ObjectType.Car:
+            return (
+                <>
+                    <span className="row">Car</span>
+                    <span className="row">Position: {position.toString()}</span>
+                    <span className="row">Direction: {direction.toString()}</span>
+                </>
+            )
+        default:
+            return (
+                <>
+                    <span className="row">Pedestrian</span>
+                    <span className="row">Position: {position.toString()}</span>
+                    <span className="row">Direction: {direction.toString()}</span>
+                </>
+            )
+    }
 }

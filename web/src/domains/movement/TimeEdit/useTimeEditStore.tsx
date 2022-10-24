@@ -3,7 +3,7 @@ import { ObjectType } from "cgv/domains/movement"
 import create from "zustand"
 import { framePositions } from "../useMovementStore"
 
-export const initRowNumber = 5
+export const initRowNumber = 2
 export interface TimeEditState {
     treePath: PathNode[]
     columnNumber: number
@@ -13,6 +13,8 @@ export interface TimeEditState {
     rowData: { descriptionName: string; steps: AbstractParsedSteps<HierarchicalInfo>[] }[]
     setRowNumber: (length: number) => void
     addRowNumber: (length: number) => void
+    columnWidth: number
+    setColumnWidth: (length: number) => void
 }
 
 export type frameData = framePositions & { type: ObjectType; name: string }
@@ -50,5 +52,10 @@ export const useTimeEditStore = create<TimeEditState>((set, get) => ({
     setRowNumber: (length: number) =>
         set((state) => {
             return { rowNumber: length }
+        }),
+    columnWidth: 1,
+    setColumnWidth: (length: number) =>
+        set((state) => {
+            return { columnWidth: length }
         }),
 }))

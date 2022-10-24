@@ -145,7 +145,7 @@ export const useMovementStore = create<TimeState>((set, get) => ({
             return { treePath: newVal, rowData: rowData, data }
         })
     },
-    time: 0,
+    time: -1,
     minTime: 1000000,
     maxTime: 0,
     data: null,
@@ -203,7 +203,6 @@ function createRowData(treePath: PathNode[]): pathData[][] {
     const data: pathData[][] = []
 
     const printTreeData = (parentNode: PathNode, ancestorValues: pathData[]) => {
-
         let index = 0
         const onlyParentValue = parentNode.operation
             ? {

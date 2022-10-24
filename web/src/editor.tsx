@@ -53,34 +53,44 @@ export function Editor() {
                     "overflow-hidden": true,
                     "position-absolute": true,
                     noselect: true,
-                    "d-flex": !showTimEdit,
-                    "responsive-flex-direction": !showTimEdit,
+                    "d-flex": true,
+                    "responsive-flex-direction": true,
                 })}
                 style={
                     showTimEdit
-                        ? { top: 0, right: 0, left: 0, bottom: 0, width: "100%", height: "100%" }
+                        ? { top: 0, right: 0, left: 0, bottom: 0, width: "100%", height: "60%" }
                         : { top: 0, right: 0, left: 0, bottom: 0 }
                 }>
                 <Dialogs />
                 <Viewer
-                    style={
-                        showTimEdit
-                            ? {
-                                  whiteSpace: "pre-line",
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  width: "100%",
-                                  height: "60%",
-                              }
-                            : { whiteSpace: "pre-line", top: 0, left: 0, right: 0, bottom: 0 }
-                    }
+                    style={{ whiteSpace: "pre-line", top: 0, left: 0, right: 0, bottom: 0 }}
                     className="flex-basis-0 flex-grow-1 bg-white"
                 />
-                {showTimEdit ? <TimeEdit /> : <RightHandSide />}
+                <RightHandSide />
             </div>
+            {showTimEdit ? (
+                <div
+                    className="overflow-hidden position-absolute noselect"
+                    style={{ height: "40%", bottom: "0px", width: "100%" }}>
+                    <TimeEdit />
+                </div>
+            ) : null}
         </>
+    )
+}
+
+const EditTools = () => {
+    return (
+        <div
+            style={{
+                width: "200%",
+                height: "30px",
+                backgroundColor: "#202024",
+                zIndex: "10",
+                marginTop: "-10",
+            }}>
+            <button>addRow</button>
+        </div>
     )
 }
 

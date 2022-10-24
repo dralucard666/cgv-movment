@@ -66,7 +66,7 @@ export default function Slider(props: any) {
                 <div
                     style={{
                         position: "absolute",
-                        top: "80%",
+                        top: "70%",
                         zIndex: "10000",
                         marginLeft: "10%",
                         marginRight: "10%",
