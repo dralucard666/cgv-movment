@@ -2,7 +2,7 @@ import { AbstractParsedSteps, HierarchicalInfo } from "cgv"
 import { ObjectType, standardTime } from "cgv/domains/movement"
 import { Vector3 } from "three"
 import create from "zustand"
-import simonTest from "../../../public/data/testLang.json"
+import { dataWorldState, WorldState } from "./movementData"
 
 // id, x , y , z, xsize, typeof
 export type movObject = {
@@ -15,89 +15,6 @@ export type movObject = {
     direction: number[]
 }
 export type framePositions = { time: number; position: number[] | null; direction: number[] | null }
-
-export const dataWorldState: WorldState[] = [
-    {
-        image: "./models/bookstore.glb",
-        width: 1424,
-        height: 1088,
-        scale: [260, 280, 310],
-        position: [-20, 0, -20],
-        name: "BookStore Empty",
-        staticObjects: ["bookstore"],
-    },
-    {
-        image: "./models/bookstore.glb",
-        width: 1424,
-        height: 1088,
-        scale: [260, 280, 310],
-        position: [-20, 0, -20],
-        name: "Simon Bookstore",
-        data: simonTest,
-        staticObjects: ["simonTest"],
-    },
-    {
-        image: "./models/eth.glb",
-        width: 640,
-        height: 480,
-        scale: [280, 280, 280],
-        position: [0, -192, -20],
-        name: "Simon ETH",
-        data: simonTest,
-        staticObjects: ["simonTest"],
-    },
-    {
-        image: "./models/hotel.glb",
-        width: 720,
-        height: 576,
-        scale: [280, 280, 280],
-        position: [0, 4, -20],
-        name: "Simon HOTEL",
-        data: simonTest,
-        staticObjects: ["simonTest"],
-    },
-    {
-        image: "./models/little.glb",
-        width: 1417,
-        height: 2019,
-        scale: [280, 280, 280],
-        position: [0, -9, -20],
-        name: "Simon LITTLE",
-        data: simonTest,
-        staticObjects: ["simonTest"],
-    },
-    {
-        image: "./models/students.glb",
-        width: 720,
-        height: 576,
-        scale: [280, 280, 280],
-        position: [0, 4, -20],
-        name: "Simon STUDENTS",
-        data: simonTest,
-        staticObjects: ["simonTest"],
-    },
-    {
-        image: "./models/zara.glb",
-        width: 720,
-        height: 576,
-        scale: [280, 280, 280],
-        position: [0, 4, -20],
-        name: "Simon ZARA",
-        data: simonTest,
-        staticObjects: ["simonTest"],
-    },
-]
-
-export interface WorldState {
-    image: string
-    width: number
-    height: number
-    position?: [number, number, number]
-    scale?: [number, number, number]
-    name: string
-    data?: any
-    staticObjects: any[]
-}
 
 export interface TimeState {
     time: number
@@ -119,6 +36,8 @@ export interface TimeState {
     setMinTime: (minTime: number) => void
     getPlayActive: () => boolean
     resetState: () => void
+    loadingState: boolean
+    setLoadingState: (newBol: boolean) => void
 }
 
 export type frameData = framePositions & { type: ObjectType; name: string }
@@ -197,6 +116,11 @@ export const useMovementStore = create<TimeState>((set, get) => ({
             }
         })
     },
+    loadingState: false,
+    setLoadingState: (newBol: boolean) =>
+        set((state) => {
+            return { loadingState: newBol }
+        }),
 }))
 
 function createRowData(treePath: PathNode[]): pathData[][] {

@@ -46,7 +46,7 @@ export default function Slider(props: any) {
 
     const reset = () => {
         useMovementStore.getState().setPlayActive(false)
-        setTime(0)
+        setTime(min)
     }
 
     const onHover = (e: Event, value: any) => {
@@ -72,9 +72,9 @@ export default function Slider(props: any) {
                         marginRight: "10%",
                         width: "80%",
                         height: "5%",
-                        color: "white",
+                        color: "#040720",
                     }}>
-                    Time : {time}
+                    <h4>Time : {time}</h4>
                     {searchCanvasPos ? (
                         <Canvas
                             style={{
@@ -96,6 +96,8 @@ export default function Slider(props: any) {
                                                   key={ob.id}
                                                   id={ob.id}
                                                   data={ob.framePos[smallScreenTime] ?? null}
+                                                  world={world}
+                                                  type={ob.type}
                                               />
                                           )
                                       })

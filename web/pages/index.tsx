@@ -32,12 +32,13 @@ import {
 import { Descriptions } from "../src/domains/movement/description"
 import { DescriptionList } from "../src/gui/description-list"
 import { GUI } from "../src/gui"
-import { dataWorldState, useMovementStore, WorldState } from "../src/domains/movement/useMovementStore"
+import { useMovementStore } from "../src/domains/movement/useMovementStore"
 import Slider from "../src/domains/movement/slider"
 import shallow from "zustand/shallow"
 import MovementLogic from "../src/domains/movement/movementLogic"
 import { useRouter } from "next/router"
-import { TimeEdit } from "../src/domains/movement/TimeEdit/timeEdit"
+import { standardTime } from "cgv/domains/movement"
+import { dataWorldState, WorldState } from "../src/domains/movement/movementData"
 import { TimeEditToggle } from "../src/domains/movement/TimeEdit/TimeEditToggle"
 
 const zoom = 18
@@ -72,14 +73,14 @@ export default function Movement() {
     )
 }
 
-const Objects = () => {
+const Objects = (props: { world: WorldState }) => {
     const data = useMovementStore((store) => store.data)
     // const playActive = useMovementStore((store) => store.playActive)
     return (
         <>
             {data
                 ? data.map((ob) => {
-                      return <MovementLogic key={ob.id} id={ob.id} data={ob} />
+                      return <MovementLogic key={ob.id} id={ob.id} data={ob} world={props.world} />
                   })
                 : null}
         </>
@@ -87,30 +88,53 @@ const Objects = () => {
 }
 
 const selectWorld = (
-    store: UseBaseStore,
     newVal: any,
-    resetMovementData: any,
     setWorldName: any,
-    setWorldState: any
+    setWorldState: any,
+    setDataOptions: any,
+    store: UseBaseStore,
+    resetMovementData: any
 ) => {
-    const selectedData = dataWorldState[newVal]
+    console.log(newVal)
+    const selectedWorld = dataWorldState[newVal]
+    setDataOptions(selectedWorld.data ?? null)
+    setWorldName(newVal)
+    setWorldState(selectedWorld)
     store.getState().deleteAllDescription()
     resetMovementData()
-    if (selectedData.data) {
+    return
+}
+
+const SelectData = (
+    dataOptions: { [key: string]: any[] } | null,
+    world: WorldState,
+    store: UseBaseStore,
+    newVal: any,
+    setDataName: any,
+    resetMovementData: any,
+    setLoadingState: any
+) => {
+    store.getState().deleteAllDescription()
+    resetMovementData()
+    if (dataOptions && newVal !== "keine Auswahl") {
         const allDescription = []
-        for (const dataLine of selectedData.data) {
+        const selectedData = dataOptions[newVal]
+        setDataName(newVal)
+        setLoadingState(true)
+
+        for (const dataLine of selectedData) {
             const lineId = ("ID" + dataLine[0]) as string
             const lineX = dataLine[1] as number
             const lineZ = dataLine[2] as number
             const lineY = dataLine[3] as number
             const lineSize = dataLine[4] as number
-            const lineTime = dataLine[5] as number
+            const lineTime = (dataLine[5] * standardTime) as number
             const lineStartDir = dataLine[6] as number[]
             const lineTypeString = dataLine[7] as string
             const lineType = getNumberType(lineTypeString)
             const lineCommands = dataLine[8] as any[]
-            const width = selectedData.width
-            const height = selectedData.height
+            const width = world.width
+            const height = world.height
             const syntaxData = sequentialSyntaxTree(
                 lineId,
                 lineX,
@@ -127,9 +151,6 @@ const selectWorld = (
         }
         store.getState().addDescriptions(allDescription)
     }
-    setWorldName(newVal)
-    setWorldState(selectedData)
-    return
 }
 
 export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElement>) {
@@ -140,33 +161,12 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
     const resetMovementData = useMovementStore((e) => e.resetState)
 
     const [worldName, setWorldName] = useState<string>()
-    const router = useRouter()
 
-    useEffect(() => {
-        const { data } = router.query
-        if (data) {
-            switch (data) {
-                case "bookstore":
-                    selectWorld(store, 1, resetMovementData, setWorldName, setWorldState)
-                    break
-                case "eth":
-                    selectWorld(store, 2, resetMovementData, setWorldName, setWorldState)
-                    break
-                case "hotel":
-                    selectWorld(store, 3, resetMovementData, setWorldName, setWorldState)
-                    break
-                case "little":
-                    selectWorld(store, 4, resetMovementData, setWorldName, setWorldState)
-                    break
-                case "students":
-                    selectWorld(store, 5, resetMovementData, setWorldName, setWorldState)
-                    break
-                case "zara":
-                    selectWorld(store, 6, resetMovementData, setWorldName, setWorldState)
-                    break
-            }
-        }
-    }, [router])
+    const [dataOptions, setDataOptions] = useState<{ [key: string]: any[] } | null>(null)
+    const dataNames: string[] = dataOptions ? Object.keys(dataOptions) : ["keine Auswahl"]
+    const [dataName, setDataName] = useState<string>("keine Auswahl")
+    const loading = useMovementStore((e) => e.loadingState)
+    const setLoadingState = useMovementStore((e) => e.setLoadingState)
 
     return (
         <Suspense fallback={null}>
@@ -202,8 +202,11 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         <PerspectiveCamera makeDefault far={10000} />
                         <CameraController />
                     </Bridge>
-                    <Objects />
+                    <Objects world={world} />
                 </Canvas>
+                    {loading ? <div className="spinner-container">
+                        <div className="loading-spinner"></div>
+                    </div> : null}
                 <Slider />
                 <div
                     className="d-flex flex-row justify-content-between position-absolute"
@@ -216,35 +219,73 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         bottom: 0,
                     }}>
                     <div className="d-flex flex-column my-3 ms-3" style={{ maxWidth: 200 }}>
-                        <DescriptionList
+                    <DescriptionList
                             createDescriptionRequestData={() => ({})}
                             style={{ pointerEvents: "all" }}
                             className="mb-3">
                             <div className="p-2 border-top border-1">
                                 <SummarizeButton />
                             </div>
-                            <div className="w-100 mt-2">Select Data</div>
-                            <select
-                                value={worldName}
-                                onChange={(e) => {
-                                    selectWorld(store, e.target.value, resetMovementData, setWorldName, setWorldState) // See Issue 2 below
-                                }}
-                                className="form-select">
-                                {dataWorldState.map((worldState, index) => (
-                                    <option value={index} key={worldState.name}>
-                                        {worldState.name}
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="w-100 mt-2">Select World</div>
+                            <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
+                                <select
+                                    value={worldName}
+                                    onChange={(e) => {
+                                        selectWorld(
+                                            e.target.value,
+                                            setWorldName,
+                                            setWorldState,
+                                            setDataOptions,
+                                            store,
+                                            resetMovementData
+                                        ) // See Issue 2 below
+                                    }}
+                                    className="form-select">
+                                    {dataWorldState.map((worldState, index) => (
+                                        <option value={index} key={worldState.name}>
+                                            {worldState.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {dataOptions ? (
+                                <>
+                                    <div className="w-100 mt-2">Select Data</div>
+                                    <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
+                                        <select
+                                            value={dataName}
+                                            onChange={(e) => {
+                                                SelectData(
+                                                    dataOptions,
+                                                    world,
+                                                    store,
+                                                    e.target.value,
+                                                    setDataName,
+                                                    resetMovementData,
+                                                    setLoadingState
+                                                ) // See Issue 2 below
+                                            }}
+                                            className="form-select">
+                                            <option value={"keine Auswahl"} key={"keine Auswahl"}>
+                                                {"keine Auswahl"}
+                                            </option>
+                                            {dataNames.map((key: string, index: number) => (
+                                                <option value={key} key={key}>
+                                                    {key}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </>
+                            ) : null}
                         </DescriptionList>
                         <div className="flex-grow-1" />
                         <div style={{ pointerEvents: "all" }} className="d-flex flex-row">
-                            <MultiSelectButton className="me-2" />
+                        <MultiSelectButton className="me-2" />
                             {/*<SpeedSelection className="me-2" />*/}
                             <DownloadButton className="me-2" />
                             <FlyCameraButton className="me-2" />
-                            <ShowError />
-                        </div>
+                            <ShowError />                        </div>
                     </div>
                     <div className="d-flex flex-column align-items-end m-3">
                         <GUI

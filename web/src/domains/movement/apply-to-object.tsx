@@ -12,11 +12,13 @@ export function applyToObject3D(
     name: string,
     object: Object3D,
     toObject: (value: Value<Primitive>) => Object3D,
-    onError: (error: any) => void
+    onError: (error: any) => void,
+    setLoadingState: (bool:boolean) => void
 ): Subscription {
     return input.subscribe({
         next: (change) => {
             const data = change.raw
+
             if (data instanceof MovingObject) {
                 const startTime = data.position[0].time * standardTime
                 const endTime = data.position[data.position.length - 1].time * standardTime
@@ -27,8 +29,8 @@ export function applyToObject3D(
                 const id = name + change.index.map((v) => "_" + v).join(",")
                 const framePositions = formatToTimeData(data.position, startTime, endTime)
                 createTimeEditTree(nameWithSplit, id, useMovementStore, data, framePositions)
-                if (useMovementStore.getState().maxTime < endTime) {
-                    useMovementStore.getState().setMaxTime(endTime)
+                if (useMovementStore.getState().maxTime <= endTime) {
+                    useMovementStore.getState().setMaxTime(endTime + 1)
                 }
                 if (useMovementStore.getState().minTime > startTime) {
                     useMovementStore.getState().setMinTime(startTime)
@@ -39,6 +41,7 @@ export function applyToObject3D(
                     key: name, children: {},
                 } as PathNode)
             }
+            setLoadingState(false)
             return
         },
         error: (error) => {

@@ -49,21 +49,29 @@ type GLTFResult = GLTF & {
     }
 }
 
-export const Truck = forwardRef((props: { id: string | null }, ref) => {
+export const Truck = forwardRef((props: { id: string | null; scale: number; positionY: number }, ref) => {
     const group = useRef<any>()
     const { nodes, materials } = useGLTF("./models/truck.glb") as GLTFResult
 
     useImperativeHandle(ref, () => ({
         updatePosition(x: number, y: number, z: number, angle: number, delta: number) {
             group.current.rotation.y = angle
-            group.current.position.y = y+2
+            group.current.position.y = y + 2
             group.current.position.z = z
             group.current.position.x = x
+        },
+
+        hideObject() {
+            group.current.visible = false
+        },
+
+        showObject() {
+            group.current.visible = true
         },
     }))
 
     return (
-        <group ref={group} dispose={null} scale={0.4}>
+        <group ref={group} dispose={null} scale={props.scale}>
             <group rotation={[-Math.PI / 2, 0, 0]}>
                 <group rotation={[Math.PI / 2, 0, 0]}>
                     <group position={[3.78, 64.77, 0.21]} rotation={[0, -Math.PI / 2, 0]} scale={[0.91, 0.85, 0.85]}>
