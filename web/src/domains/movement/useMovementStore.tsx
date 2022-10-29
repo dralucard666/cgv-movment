@@ -1,5 +1,5 @@
 import { AbstractParsedSteps, HierarchicalInfo } from "cgv"
-import { ObjectType, standardTime } from "cgv/domains/movement"
+import { ObjectType, standardTime, Primitive } from "cgv/domains/movement"
 import { Vector3 } from "three"
 import create from "zustand"
 import { dataWorldState, WorldState } from "./movementData"
@@ -20,8 +20,8 @@ export interface TimeState {
     time: number
     maxTime: number
     minTime: number
-    treePath: PathNode[]
-    setTreePath: (treePath: PathNode[]) => void
+    treePath: RowType[]
+    setTreePath: (treePath: RowType[]) => void
     data: movObject[] | null
     world: WorldState
     setWorld: (newVal: WorldState) => void
@@ -30,7 +30,7 @@ export interface TimeState {
     setTime: (newVal: number) => void
     action: () => number
     playActive: boolean
-    rowData: pathData[][]
+    rowData: totalPathData[][]
     setPlayActive: (newBol: boolean) => void
     setMaxTime: (maxTime: number) => void
     setMinTime: (minTime: number) => void
@@ -47,6 +47,28 @@ export type pathData = frameData & {
     path: [string, ...number[]]
 }
 
+export type SinglePathData = { type: "other"; key: string; primitive?: Primitive }
+export type MultiPathData = { data: pathData; type: "moveData" }
+
+export type totalPathData = MultiPathData | SinglePathData
+
+export type moveData = {
+    data: PathNode
+    type: "moveData"
+}
+
+export type onlyName = {
+    type: "onlyName"
+    data: { key: string }
+}
+
+export type nameSample = {
+    type: "nameSample"
+    data: { key: string; primitive: Primitive }
+}
+
+export type RowType = moveData | onlyName | nameSample
+
 export interface PathNode {
     key: any // type for unknown keys.
     children: { [key: string]: PathNode } // type for a known property.
@@ -57,9 +79,13 @@ export interface PathNode {
 
 export const useMovementStore = create<TimeState>((set, get) => ({
     treePath: [],
-    setTreePath: (newVal: PathNode[]) => {
+    setTreePath: (newVal: RowType[]) => {
+        console.log(newVal)
+        console.log("newVal")
         const rowData = createRowData(newVal)
-        const data = movementData(rowData)
+        console.log("rowData")
+        console.log(rowData)
+        const data = movementData(rowData.filter((v) => v[0].type === "moveData") as MultiPathData[][])
         return set((state) => {
             return { treePath: newVal, rowData: rowData, data }
         })
@@ -123,10 +149,14 @@ export const useMovementStore = create<TimeState>((set, get) => ({
         }),
 }))
 
-function createRowData(treePath: PathNode[]): pathData[][] {
-    const data: pathData[][] = []
+function createRowData(treePath: RowType[]): totalPathData[][] {
+    const data: totalPathData[][] = []
+    const pathData: pathData[][] = []
 
     const printTreeData = (parentNode: PathNode, ancestorValues: pathData[]) => {
+        /*         console.log("neue rekursion")
+        console.log(parentNode)
+        console.log(ancestorValues) */
         let index = 0
         const onlyParentValue = parentNode.operation
             ? {
@@ -135,14 +165,16 @@ function createRowData(treePath: PathNode[]): pathData[][] {
                   path: parentNode.path,
               }
             : null
+
         const ancestorCopy = [...ancestorValues]
         if (onlyParentValue) {
             ancestorCopy.push(onlyParentValue)
         }
         //console.log(onlyParentValue)
+        //console.log(ancestorCopy)
         for (const [key, value] of Object.entries(parentNode.children)) {
             if (value.children && Object.keys(value.children).length !== 0) {
-                if (index == 0) {
+                if (index == 0 && Object.keys(value.children).length > 0) {
                     printTreeData(value, ancestorCopy)
                     index += 1
                 } else {
@@ -150,25 +182,41 @@ function createRowData(treePath: PathNode[]): pathData[][] {
                 }
             } else {
                 const valueData = { ...value.framePosition, operation: value.operation, path: value.path }
+
                 if (index == 0) {
                     index += 1
                     ancestorCopy.push(valueData)
-                    data.push(ancestorCopy)
+                    pathData.push(ancestorCopy)
                 } else if (onlyParentValue) {
-                    data.push([onlyParentValue, valueData])
+                    pathData.push([onlyParentValue, valueData])
                 } else {
-                    data.push([valueData])
+                    pathData.push([valueData])
                 }
             }
         }
     }
     for (const treePaths of treePath) {
-        printTreeData(treePaths, [])
+        console.log("hier ist die schleife")
+        if (treePaths.type === "moveData") {
+            printTreeData(treePaths.data, [])
+        } else if (treePaths.type === "nameSample") {
+            console.log("kommen wir hier rein")
+            data.push([{ type: "other", key: treePaths.data.key, primitive: treePaths.data.primitive }])
+        } else {
+            data.push([{ type: "other", key: treePaths.data.key }])
+        }
     }
+    const mapData = pathData.map((v) =>
+        v.map((e) => {
+            return { data: e, type: "moveData" }
+        })
+    ) as totalPathData[][]
+    data.push(...mapData)
     return data
 }
 
-function movementData(paths: pathData[][]): movObject[] {
+function movementData(multiPaths: MultiPathData[][]): movObject[] {
+    const paths = multiPaths.map((v) => v.map((e) => e.data))
     const data: movObject[] = []
     for (const path of paths) {
         if (path.length > 0) {
@@ -210,7 +258,6 @@ function movementData(paths: pathData[][]): movObject[] {
             data.push(newMovOb)
         }
     }
-    //console.log(data)
     return data
 }
 

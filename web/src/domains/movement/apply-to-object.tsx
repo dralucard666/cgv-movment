@@ -3,7 +3,7 @@ import { Value } from "cgv/interpreter"
 import { Observable, Subscription, tap } from "rxjs"
 import { Object3D } from "three"
 import { ChangeType, valuesToChanges } from "cgv/interpreter"
-import { framePositions, movObject, TimeState, useMovementStore } from "./useMovementStore"
+import { framePositions, moveData, movObject, TimeState, useMovementStore } from "./useMovementStore"
 import { PathNode, TimeEditState, useTimeEditStore } from "./TimeEdit/useTimeEditStore"
 import { StoreApi, UseBoundStore } from "zustand"
 
@@ -22,25 +22,45 @@ export function applyToObject3D(
             if (data instanceof MovingObject) {
                 const startTime = data.position[0].time * standardTime
                 const endTime = data.position[data.position.length - 1].time * standardTime
-                let nameWithSplit = name
-                if (nameWithSplit) {
-                    nameWithSplit = name + change.index[0]
-                }
                 const id = name + change.index.map((v) => "_" + v).join(",")
                 const framePositions = formatToTimeData(data.position, startTime, endTime)
-                createTimeEditTree(nameWithSplit, id, useMovementStore, data, framePositions)
+                const containsSample = data.grammarSteps.some(
+                    (v) => v.type === "operation" && v.identifier === "sample"
+                )
+                const sampleName =
+                    name +
+                    change.index
+                        .slice(0, 1)
+                        .map((v) => "_" + v)
+                        .join(",")
+                console.log(sampleName)
+                createTimeEditTree(containsSample ? sampleName : name, id, useMovementStore, data, framePositions)
                 if (useMovementStore.getState().maxTime <= endTime) {
                     useMovementStore.getState().setMaxTime(endTime + 1)
                 }
                 if (useMovementStore.getState().minTime > startTime) {
                     useMovementStore.getState().setMinTime(startTime)
                 }
+            } else if (data instanceof Primitive) {
+                console.log("ist primitive")
+                console.log(data)
+                const pathTree = useMovementStore.getState().treePath
+                pathTree.push({
+                    type: "nameSample",
+                    data: {
+                        key: name,
+                        primitive: data,
+                    },
+                })
             } else {
                 const pathTree = useMovementStore.getState().treePath
                 pathTree.push({
-                    key: name,
-                    children: {},
-                } as PathNode)
+                    type: "onlyName",
+                    data: {
+                        key: name,
+                        children: {},
+                    } as PathNode,
+                })
             }
             setLoadingState(false)
             return
@@ -59,10 +79,10 @@ function createTimeEditTree(
     framePositions: framePositions[]
 ) {
     const pathTree = useMovementStore.getState().treePath
-    if (!pathTree.some((v) => v.key == name)) {
-        pathTree.push({ key: name, children: {} } as PathNode)
+    if (!pathTree.some((v) => v.data.key == name)) {
+        pathTree.push({ type: "moveData", data: { key: name, children: {} } as PathNode } as moveData)
     }
-    let node = pathTree.find((v) => v.key == name) as PathNode
+    let node = pathTree.find((v) => v.data.key == name)?.data as PathNode
     let sampleIndex = 0
     for (let index = 0; index < data.grammarSteps.length; index++) {
         const step = data.grammarSteps[index]

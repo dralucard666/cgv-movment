@@ -11,7 +11,14 @@ import {
 import { ObjectType, standardTime } from "cgv/domains/movement"
 import { useEffect, useState } from "react"
 import { useBaseGlobal, useBaseStore, useBaseStoreState } from "../../../global"
-import { framePositions, movObject, useMovementStore } from "../useMovementStore"
+import {
+    framePositions,
+    movObject,
+    MultiPathData,
+    SinglePathData,
+    totalPathData,
+    useMovementStore,
+} from "../useMovementStore"
 import { frameData, initRowNumber, pathData, PathNode, useTimeEditStore } from "./useTimeEditStore"
 import { AbstractParsedParallel } from "cgv/parser"
 import { Slider } from "@mui/material"
@@ -22,8 +29,8 @@ export function TimeEdit() {
     if (data.length > useTimeEditStore.getState().rowNumber) {
         setRowNumber(data.length)
     }
+    console.log(data)
     const rowNumber = useTimeEditStore((state) => state.rowNumber)
-
     return (
         <>
             <div style={{ height: "12%" }}>
@@ -145,12 +152,7 @@ const getRawValue = (rawValue: AbstractParsedSteps<HierarchicalInfo> | undefined
     return rawValue.type == "raw" ? rawValue.value : null
 }
 
-function Column(props: {
-    time: number
-    descriptionName?: string | undefined
-    data?: pathData
-    showAddDescription: boolean
-}) {
+function Column(props: { time: number; data?: pathData; showAddDescription: boolean }) {
     const data = props.data
     const store = useBaseStore()
     const initTime = useMovementStore.getState().time
@@ -161,7 +163,6 @@ function Column(props: {
     const columnWidth = useTimeEditStore((e) => e.columnWidth)
 
     const updateTime = (stateTime: number) => {
-        console.log("hier ist was")
         if (props.time * standardTime <= stateTime && stateTime < (props.time + 1) * standardTime) {
             if (!isSelected) {
                 setIsSelected(true)
@@ -181,10 +182,7 @@ function Column(props: {
 
     const selectRule = () => {
         useMovementStore.getState().setTime(props.time * standardTime)
-        console.log("selectRule")
-        console.log(data?.operation)
         if (data && data?.operation) {
-            console.log("kommen hier rein")
             store.getState().select(
                 {
                     path: data.path,
@@ -198,9 +196,13 @@ function Column(props: {
         }
     }
 
-    const addAfter = () => {
+    const setTime = () => {
+        console.log("set Time")
+        useMovementStore.getState().setTime(props.time * standardTime)
+    }
+
+    const addCommand = (type: "parallel" | "before" | "after") => {
         if (data && data?.operation) {
-            console.log("kommen hier rein")
             store.getState().select(
                 {
                     path: data.path,
@@ -211,7 +213,7 @@ function Column(props: {
                 undefined,
                 "replace"
             )
-            requestAdd(store, "after")
+            requestAdd(store, type)
         }
     }
 
@@ -223,7 +225,8 @@ function Column(props: {
                 display: "table-cell",
                 borderLeft: "5px inset #202024",
                 borderBottom: "5px inset #202024",
-            }}>
+            }}
+            onClick={setTime}>
             <div
                 style={{
                     width: columnWidth * 800,
@@ -244,25 +247,40 @@ function Column(props: {
                                         ? "40%"
                                         : columnWidth > 0.4
                                         ? "50%"
-                                        : columnWidth > 0.2
+                                        : columnWidth > 0.3
                                         ? "50%"
                                         : "20%",
                                 position: "absolute",
-                            }}
-                            onClick={selectRule}>
+                            }}>
                             <div className="row">
                                 <div className="container" onClick={selectRule}>
                                     {columnWidth > 0.1
                                         ? ObjectText(data.type, data.position ?? [0, 0, 0], data.direction ?? [0, 0, 0])
                                         : null}
                                 </div>
-                                <button
-                                    type="button"
-                                    style={{ width: "70px", height: "40px", marginTop: "10px" }}
-                                    onClick={addAfter}
-                                    className="btn btn-secondary">
-                                    +After
-                                </button>
+                                {columnWidth > 0.4 ? (
+                                    <>
+                                        <button
+                                            type="button"
+                                            style={{
+                                                width: "100px",
+                                                height: "40px",
+                                                marginTop: "10px",
+                                                marginRight: 5,
+                                            }}
+                                            onClick={() => addCommand("parallel")}
+                                            className="btn btn-secondary">
+                                            +Parallel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            style={{ width: "70px", height: "40px", marginTop: "10px" }}
+                                            onClick={() => addCommand("after")}
+                                            className="btn btn-secondary">
+                                            +After
+                                        </button>
+                                    </>
+                                ) : null}
                             </div>
                         </div>
                         {data.operation && columnWidth > 0.3 ? (
@@ -270,7 +288,7 @@ function Column(props: {
                                 style={{
                                     position: "absolute",
                                     zIndex: 20,
-                                    marginLeft: -20,
+                                    marginLeft: -30,
                                     marginTop: 70,
                                     width: columnWidth * 200,
                                     fontSize: columnWidth > 0.6 ? "20px" : "16px",
@@ -303,15 +321,40 @@ function childrenArrayToString(children: AbstractParsedSteps<HierarchicalInfo>[]
     return children.map((c) => (c.type === "raw" ? c.value : "")).toString()
 }
 
-function Row(props: { key: number; data?: pathData[] }) {
-    const data = props.data
-    const descriptionName = data ? data[0].name.replace('Start@','') : undefined
-    const startT = data ? data[0].time ?? 0 : 0
-    const endT = data ? data[data.length - 1].time ?? 1 : 0
+function Row(props: { key: number; data?: totalPathData[] }) {
     const columnNumber = useTimeEditStore((state) => state.columnNumber)
     const setColumnNumber = useTimeEditStore((state) => state.setColumnNumber)
+    let data = null
+    let startT = 0
+    let endT = 0
+    if (props.data) {
+        if (props.data[0].type === "moveData") {
+            const dataSave = props.data as MultiPathData[]
+            data = dataSave.map((v) => {
+                return v.data
+            })
+            startT = data ? data[0].time ?? 0 : 0
+            endT = data ? data[data.length - 1].time ?? 1 : 0
+        }
+    }
     if (endT > columnNumber) {
         setColumnNumber(endT + 1)
+    }
+
+    const descriptionName = (): string => {
+        console.log(props.data)
+        if (!props.data) {
+            return "add Description"
+        } else if (props.data[0].type === "moveData") {
+            const data = props.data as MultiPathData[]
+            const descriptionName = data[data.length - 1].data.name.replace("Start@", "")
+            return descriptionName
+        } else if (props.data[0].type === "other") {
+            const data = props.data as SinglePathData[]
+            return data[0].key
+        } else {
+            return "add Description"
+        }
     }
 
     return (
@@ -324,9 +367,7 @@ function Row(props: { key: number; data?: pathData[] }) {
                     borderBottom: "5px inset #202024",
                 }}>
                 <div style={{ position: "relative", height: "200px", width: "150px" }}>
-                    <div style={{ position: "absolute", paddingTop: 90, paddingLeft: 20 }}>
-                        {descriptionName ? descriptionName : "add Description"}
-                    </div>
+                    <div style={{ position: "absolute", paddingTop: 90, paddingLeft: 20 }}>{descriptionName()}</div>
                 </div>
             </div>
             {data ? (
@@ -338,14 +379,7 @@ function Row(props: { key: number; data?: pathData[] }) {
                         return <Column key={i + startT} time={i + startT} data={v} showAddDescription={false} />
                     })}
                     {Array.from(Array(columnNumber - endT).keys()).map((i) => {
-                        return (
-                            <Column
-                                descriptionName={descriptionName}
-                                key={i + endT + 1}
-                                time={i + endT + 1}
-                                showAddDescription={true}
-                            />
-                        )
+                        return <Column key={i + endT + 1} time={i + endT + 1} showAddDescription={true} />
                     })}
                 </>
             ) : (
