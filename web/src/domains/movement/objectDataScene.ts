@@ -59,7 +59,7 @@ const extraData = {
             lineOffsetX: 0,
             lineOffsetY: 20,
             lineLength: 50,
-            textMarginX: -10,
+            textMarginX: 0,
             textMarginY: 50,
             positionY: 0,
             rotationY: Math.PI / 2,

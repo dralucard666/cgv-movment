@@ -57,7 +57,7 @@ export function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "a
         )
 }
 
-function requestReplace(store: UseBaseStore) {
+export function requestReplace(store: UseBaseStore) {
     store
         .getState()
         .request(

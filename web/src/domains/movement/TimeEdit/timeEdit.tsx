@@ -8,7 +8,7 @@ import {
     SelectedSteps,
     shallowEqual,
 } from "cgv"
-import { ObjectType, standardTime } from "cgv/domains/movement"
+import { ObjectType, Primitive, standardTime } from "cgv/domains/movement"
 import { useEffect, useState } from "react"
 import { useBaseGlobal, useBaseStore, useBaseStoreState } from "../../../global"
 import {
@@ -22,14 +22,16 @@ import {
 import { frameData, initRowNumber, pathData, PathNode, useTimeEditStore } from "./useTimeEditStore"
 import { AbstractParsedParallel } from "cgv/parser"
 import { Slider } from "@mui/material"
-import { requestAdd } from "../../../gui"
+import { requestAdd, requestReplace } from "../../../gui"
+import { DeleteIcon } from "../../../icons/delete"
+import classNames from "classnames"
+
 export function TimeEdit() {
     const data = useMovementStore((state) => state.rowData)
     const setRowNumber = useTimeEditStore((state) => state.setRowNumber)
     if (data.length > useTimeEditStore.getState().rowNumber) {
         setRowNumber(data.length)
     }
-    console.log(data)
     const rowNumber = useTimeEditStore((state) => state.rowNumber)
     return (
         <>
@@ -106,10 +108,25 @@ const EditTools = () => {
 
 const HeaderColumn = (props: { time: number }) => {
     const columnWidth = useTimeEditStore((e) => e.columnWidth)
+    const [isSelected, setIsSelected] = useState(false)
+    useMovementStore.subscribe((state) => updateTime(state.time))
+
+    const updateTime = (stateTime: number) => {
+        if (props.time * standardTime <= stateTime && stateTime < (props.time + 1) * standardTime) {
+            if (!isSelected) {
+                setIsSelected(true)
+            }
+        } else {
+            if (isSelected) {
+                setIsSelected(false)
+            }
+        }
+    }
+
     return (
         <div
             style={{
-                backgroundColor: "grey",
+                backgroundColor: isSelected ? "#bf5f4e" : "grey",
                 display: "table-cell",
                 borderLeft: "5px inset #202024",
                 borderBottom: "5px inset #202024",
@@ -197,7 +214,6 @@ function Column(props: { time: number; data?: pathData; showAddDescription: bool
     }
 
     const setTime = () => {
-        console.log("set Time")
         useMovementStore.getState().setTime(props.time * standardTime)
     }
 
@@ -214,6 +230,22 @@ function Column(props: { time: number; data?: pathData; showAddDescription: bool
                 "replace"
             )
             requestAdd(store, type)
+        }
+    }
+
+    const replace = () => {
+        if (data && data?.operation) {
+            store.getState().select(
+                {
+                    path: data.path,
+                    type: "operation",
+                    identifier: data.operation.name,
+                    children: data.operation.parameter,
+                } as SelectedSteps,
+                undefined,
+                "replace"
+            )
+            requestReplace(store)
         }
     }
 
@@ -249,7 +281,7 @@ function Column(props: { time: number; data?: pathData; showAddDescription: bool
                                         ? "50%"
                                         : columnWidth > 0.3
                                         ? "50%"
-                                        : "20%",
+                                        : "10%",
                                 position: "absolute",
                             }}>
                             <div className="row">
@@ -263,21 +295,49 @@ function Column(props: { time: number; data?: pathData; showAddDescription: bool
                                         <button
                                             type="button"
                                             style={{
-                                                width: "100px",
+                                                width: columnWidth > 0.5 ? "100px" : "70px",
                                                 height: "40px",
                                                 marginTop: "10px",
                                                 marginRight: 5,
                                             }}
                                             onClick={() => addCommand("parallel")}
-                                            className="btn btn-secondary">
+                                            className={classNames({
+                                                btn: true,
+                                                "btn-secondary": true,
+                                                "btn-sm": columnWidth < 0.6,
+                                            })}>
                                             +Parallel
                                         </button>
                                         <button
                                             type="button"
-                                            style={{ width: "70px", height: "40px", marginTop: "10px" }}
+                                            style={{
+                                                width: columnWidth > 0.5 ? "70px" : "50px",
+                                                height: "40px",
+                                                marginTop: "10px",
+                                                marginRight: 5,
+                                            }}
                                             onClick={() => addCommand("after")}
-                                            className="btn btn-secondary">
+                                            className={classNames({
+                                                btn: true,
+                                                "btn-secondary": true,
+                                                "btn-sm": columnWidth < 0.6,
+                                            })}>
                                             +After
+                                        </button>
+                                        <button
+                                            type="button"
+                                            style={{
+                                                width: columnWidth > 0.5 ? "100px" : "70px",
+                                                height: "40px",
+                                                marginTop: "10px",
+                                            }}
+                                            onClick={replace}
+                                            className={classNames({
+                                                btn: true,
+                                                "btn-secondary": true,
+                                                "btn-sm": columnWidth < 0.6,
+                                            })}>
+                                            +Replace
                                         </button>
                                     </>
                                 ) : null}
@@ -324,36 +384,178 @@ function childrenArrayToString(children: AbstractParsedSteps<HierarchicalInfo>[]
 function Row(props: { key: number; data?: totalPathData[] }) {
     const columnNumber = useTimeEditStore((state) => state.columnNumber)
     const setColumnNumber = useTimeEditStore((state) => state.setColumnNumber)
-    let data = null
+    const store = useBaseStore()
+    let moveData = null
+    const otherData = null
     let startT = 0
     let endT = 0
     if (props.data) {
         if (props.data[0].type === "moveData") {
             const dataSave = props.data as MultiPathData[]
-            data = dataSave.map((v) => {
+            moveData = dataSave.map((v) => {
                 return v.data
             })
-            startT = data ? data[0].time ?? 0 : 0
-            endT = data ? data[data.length - 1].time ?? 1 : 0
+            startT = moveData ? moveData[0].time ?? 0 : 0
+            endT = moveData ? moveData[moveData.length - 1].time ?? 1 : 0
         }
     }
     if (endT > columnNumber) {
         setColumnNumber(endT + 1)
     }
 
-    const descriptionName = (): string => {
-        console.log(props.data)
+    const selectRule = (descriptionName: string, primitive?: Primitive) => {
+        useMovementStore.getState().setTime(0)
+        if (primitive && primitive.grammarSteps.length > 0) {
+            if (primitive.grammarSteps[0].type === "operation") {
+                store.getState().select(
+                    {
+                        path: primitive.grammarSteps[0].path,
+                        type: "operation",
+                        identifier: primitive.grammarSteps[0].identifier,
+                        children: primitive.grammarSteps[0].children,
+                    } as SelectedSteps,
+                    undefined,
+                    "replace"
+                )
+            }
+        } else {
+            store.getState().selectDescription(descriptionName, store.getState().shift ?? false)
+        }
+    }
+
+    const addCommand = (type: "parallel" | "before" | "after", descriptionName: string, primitive?: Primitive) => {
+        if (primitive && primitive.grammarSteps.length > 0) {
+            if (primitive.grammarSteps[0].type === "operation") {
+                store.getState().select(
+                    {
+                        path: primitive.grammarSteps[0].path,
+                        type: "operation",
+                        identifier: primitive.grammarSteps[0].identifier,
+                        children: primitive.grammarSteps[0].children,
+                    } as SelectedSteps,
+                    undefined,
+                    "replace"
+                )
+                requestAdd(store, type)
+            }
+        } else {
+            store.getState().selectDescription(descriptionName, store.getState().shift ?? false)
+            requestAdd(store, type)
+        }
+    }
+
+    const addDescription = () => {
+        store.getState().request(
+            "create-description",
+            (name) => store.getState().addDescriptions([{ name }]),
+            () => ({})
+        )
+    }
+
+    const DescriptionName = () => {
         if (!props.data) {
-            return "add Description"
+            return (
+                <button type="button" onClick={addDescription} className="btn btn-secondary">
+                    <div>Add</div>
+                    <div>Description</div>
+                </button>
+            )
         } else if (props.data[0].type === "moveData") {
             const data = props.data as MultiPathData[]
-            const descriptionName = data[data.length - 1].data.name.replace("Start@", "")
-            return descriptionName
+            const nameOfPath = data[data.length - 1].data.name.replace("Start@", "")
+            const descriptionName = nameOfPath.split("_")[0]
+            return (
+                <div>
+                    <div
+                        onClick={() =>
+                            store.getState().selectDescription(descriptionName, store.getState().shift ?? false)
+                        }>
+                        {nameOfPath}
+                    </div>
+                    <div>
+                        <button
+                            type="button"
+                            style={{ width: "70px", height: "40px", marginTop: "10px" }}
+                            onClick={() => addCommand("after", descriptionName, undefined)}
+                            className="btn btn-secondary">
+                            +After
+                        </button>
+                    </div>
+                    <div className="mt-2">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                store.getState().deleteDescription(descriptionName)
+                                const oldTreePath = useMovementStore
+                                    .getState()
+                                    .treePath.filter((v) => !v.data.key.includes(descriptionName))
+                                useMovementStore.getState().setTreePath(oldTreePath)
+                            }}
+                            style={{
+                                backgroundColor: "white",
+                                border: "2px solid black",
+                            }}
+                            className={`btn text-danger btn-sm`}>
+                            <DeleteIcon />
+                        </button>
+                    </div>
+                </div>
+            )
         } else if (props.data[0].type === "other") {
             const data = props.data as SinglePathData[]
-            return data[0].key
+            const descriptionName = data[0].key.replace("Start@", "").split("_")[0]
+            if (data[0].primitive?.startPosition) {
+                return (
+                    <div onClick={() => selectRule(descriptionName, data[0].primitive)}>
+                        <div>{data[0].key.replace("Start@", "")}</div>
+                        <div> Position:</div>
+                        <div>
+                            {data[0].primitive.startPosition
+                                .toArray()
+                                .map((v) => Math.round(v))
+                                .toString()}
+                        </div>
+                        <div>
+                            <button
+                                type="button"
+                                style={{ width: "70px", height: "40px", marginTop: "10px" }}
+                                onClick={() => addCommand("after", descriptionName, data[0].primitive)}
+                                className="btn btn-secondary">
+                                +After
+                            </button>
+                        </div>
+                        <div className="mt-2">
+                            <button
+                                style={{
+                                    backgroundColor: "white",
+                                    border: "2px solid black",
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    store.getState().deleteDescription(descriptionName)
+                                    const oldTreePath = useMovementStore
+                                        .getState()
+                                        .treePath.filter((v) => !v.data.key.includes(descriptionName))
+                                    useMovementStore.getState().setTreePath(oldTreePath)
+                                }}
+                                className={`btn text-danger btn-sm`}>
+                                <DeleteIcon />
+                            </button>
+                        </div>
+                    </div>
+                )
+            }
+            return <span>{data[0].key}</span>
         } else {
-            return "add Description"
+            return (
+                <button
+                    type="button"
+                    style={{ width: "70px", height: "40px", marginTop: "10px" }}
+                    onClick={addDescription}
+                    className="btn btn-secondary">
+                    Add Description
+                </button>
+            )
         }
     }
 
@@ -367,15 +569,17 @@ function Row(props: { key: number; data?: totalPathData[] }) {
                     borderBottom: "5px inset #202024",
                 }}>
                 <div style={{ position: "relative", height: "200px", width: "150px" }}>
-                    <div style={{ position: "absolute", paddingTop: 90, paddingLeft: 20 }}>{descriptionName()}</div>
+                    <div style={{ position: "absolute", paddingTop: 30, paddingLeft: 20 }}>
+                        <DescriptionName />
+                    </div>
                 </div>
             </div>
-            {data ? (
+            {moveData ? (
                 <>
                     {Array.from(Array(startT).keys()).map((i) => {
                         return <Column key={i} time={i} showAddDescription={false} />
                     })}
-                    {data.map((v, i) => {
+                    {moveData.map((v, i) => {
                         return <Column key={i + startT} time={i + startT} data={v} showAddDescription={false} />
                     })}
                     {Array.from(Array(columnNumber - endT).keys()).map((i) => {

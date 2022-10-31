@@ -50,7 +50,7 @@ export default function Movement() {
     return (
         <>
             <Head>
-                <title>CGV | Shape Editorrrrrrrrrrrrrrrrr</title>
+                <title>CGV | Shape Editor</title>
                 <meta name="description" content=""></meta>
                 <meta name="viewport" content="initial-scale=1.0, width=device-width" />
             </Head>
@@ -80,7 +80,9 @@ const Objects = (props: { world: WorldState }) => {
         <>
             {data
                 ? data.map((ob) => {
-                      return <MovementLogic key={ob.id} id={ob.id} data={ob} world={props.world} />
+                      return (
+                          <MovementLogic key={ob.id} id={ob.id.replace("Start@", "")} data={ob} world={props.world} />
+                      )
                   })
                 : null}
         </>
@@ -204,9 +206,11 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                     </Bridge>
                     <Objects world={world} />
                 </Canvas>
-                    {loading ? <div className="spinner-container">
+                {loading ? (
+                    <div className="spinner-container">
                         <div className="loading-spinner"></div>
-                    </div> : null}
+                    </div>
+                ) : null}
                 <Slider />
                 <div
                     className="d-flex flex-row justify-content-between position-absolute"
@@ -219,7 +223,7 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         bottom: 0,
                     }}>
                     <div className="d-flex flex-column my-3 ms-3" style={{ maxWidth: 200 }}>
-                    <DescriptionList
+                        <DescriptionList
                             createDescriptionRequestData={() => ({})}
                             style={{ pointerEvents: "all" }}
                             className="mb-3">
@@ -281,11 +285,12 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         </DescriptionList>
                         <div className="flex-grow-1" />
                         <div style={{ pointerEvents: "all" }} className="d-flex flex-row">
-                        <MultiSelectButton className="me-2" />
+                            <MultiSelectButton className="me-2" />
                             {/*<SpeedSelection className="me-2" />*/}
                             <DownloadButton className="me-2" />
                             <FlyCameraButton className="me-2" />
-                            <ShowError />                        </div>
+                            <ShowError />
+                        </div>
                     </div>
                     <div className="d-flex flex-column align-items-end m-3">
                         <GUI
@@ -314,7 +319,7 @@ const Clock = () => {
     const maxTime = useMovementStore((e) => e.maxTime)
 
     useFrame(({ clock }) => {
-        if (useMovementStore.getState().getPlayActive() && useMovementStore.getState().time+1 < maxTime) {
+        if (useMovementStore.getState().getPlayActive() && useMovementStore.getState().time + 1 < maxTime) {
             useMovementStore.getState().incrementTime(1)
         }
     })

@@ -103,10 +103,6 @@ function useSimpleInterpretation(
         }
         const subscription = applyToObject3D(
             of(newdefaultValue).pipe(
-                map((v) => {
-                    useMovementStore.getState().setTreePath([])
-                    return v
-                }),
                 toValue(),
                 interprete<Primitive, HierarchicalInfo>(description, operations, {
                     delay: store.getState().interpretationDelay,
@@ -186,7 +182,10 @@ function useInterpretation(
             subscription = applyToObject3D(
                 of(newdefaultValue).pipe(
                     map((v) => {
-                        useMovementStore.getState().setTreePath([])
+                        const oldTreePath = useMovementStore
+                            .getState()
+                            .treePath.filter((v) => !v.data.key.includes(name))
+                        useMovementStore.getState().setTreePath(oldTreePath)
                         return v
                     }),
                     toValue(),
@@ -274,7 +273,7 @@ function useInterpretation(
                                 }
                             },
                         },
-                    }),
+                    })
                 ),
                 name,
                 ref.current,

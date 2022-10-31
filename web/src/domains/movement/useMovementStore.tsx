@@ -80,11 +80,7 @@ export interface PathNode {
 export const useMovementStore = create<TimeState>((set, get) => ({
     treePath: [],
     setTreePath: (newVal: RowType[]) => {
-        console.log(newVal)
-        console.log("newVal")
         const rowData = createRowData(newVal)
-        console.log("rowData")
-        console.log(rowData)
         const data = movementData(rowData.filter((v) => v[0].type === "moveData") as MultiPathData[][])
         return set((state) => {
             return { treePath: newVal, rowData: rowData, data }
@@ -196,11 +192,9 @@ function createRowData(treePath: RowType[]): totalPathData[][] {
         }
     }
     for (const treePaths of treePath) {
-        console.log("hier ist die schleife")
         if (treePaths.type === "moveData") {
             printTreeData(treePaths.data, [])
         } else if (treePaths.type === "nameSample") {
-            console.log("kommen wir hier rein")
             data.push([{ type: "other", key: treePaths.data.key, primitive: treePaths.data.primitive }])
         } else {
             data.push([{ type: "other", key: treePaths.data.key }])

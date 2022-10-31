@@ -33,7 +33,6 @@ export function applyToObject3D(
                         .slice(0, 1)
                         .map((v) => "_" + v)
                         .join(",")
-                console.log(sampleName)
                 createTimeEditTree(containsSample ? sampleName : name, id, useMovementStore, data, framePositions)
                 if (useMovementStore.getState().maxTime <= endTime) {
                     useMovementStore.getState().setMaxTime(endTime + 1)
@@ -42,16 +41,24 @@ export function applyToObject3D(
                     useMovementStore.getState().setMinTime(startTime)
                 }
             } else if (data instanceof Primitive) {
-                console.log("ist primitive")
-                console.log(data)
+                const containsSample = data.grammarSteps.some(
+                    (v) => v.type === "operation" && v.identifier === "sample"
+                )
+                const sampleName =
+                    name +
+                    change.index
+                        .slice(0, 1)
+                        .map((v) => "_" + v)
+                        .join(",")
                 const pathTree = useMovementStore.getState().treePath
                 pathTree.push({
                     type: "nameSample",
                     data: {
-                        key: name,
+                        key: containsSample ? sampleName : name,
                         primitive: data,
                     },
                 })
+                useMovementStore.getState().setTreePath(pathTree)
             } else {
                 const pathTree = useMovementStore.getState().treePath
                 pathTree.push({
@@ -61,6 +68,7 @@ export function applyToObject3D(
                         children: {},
                     } as PathNode,
                 })
+                useMovementStore.getState().setTreePath(pathTree)
             }
             setLoadingState(false)
             return

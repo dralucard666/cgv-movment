@@ -64,7 +64,7 @@ export const Person = forwardRef((props: { id: string | null; scale: number; pos
 
     useImperativeHandle(ref, () => ({
         updatePosition(x: number, y: number, z: number, angle: number, delta: number) {
-            if (group.current.position.x == x && group.current.position.z == z) {
+            if (group.current.position.x == x && group.current.position.z == z && group.current.rotation.y == angle) {
                 mixer.setTime(0.53)
                 return
             }
