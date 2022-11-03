@@ -20,10 +20,10 @@ export function applyToObject3D(
             const data = change.raw
 
             if (data instanceof MovingObject) {
-                const startTime = data.position[0].time * standardTime
-                const endTime = data.position[data.position.length - 1].time * standardTime
+                const startStep = data.position[0].time
+                const endStep = data.position[data.position.length - 1].time
                 const id = name + change.index.map((v) => "_" + v).join(",")
-                const framePositions = formatToTimeData(data.position, startTime, endTime)
+                const framePositions = formatToTimeData(data.position, startStep, endStep)
                 const containsSample = data.grammarSteps.some(
                     (v) => v.type === "operation" && v.identifier === "sample"
                 )
@@ -33,6 +33,8 @@ export function applyToObject3D(
                         .slice(0, 1)
                         .map((v) => "_" + v)
                         .join(",")
+                const startTime = startStep * standardTime
+                const endTime = endStep * standardTime
                 createTimeEditTree(containsSample ? sampleName : name, id, useMovementStore, data, framePositions)
                 if (useMovementStore.getState().maxTime <= endTime) {
                     useMovementStore.getState().setMaxTime(endTime + 1)

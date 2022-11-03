@@ -24,6 +24,8 @@ import { AbstractParsedParallel } from "cgv/parser"
 import { Slider } from "@mui/material"
 import { requestAdd, requestReplace } from "../../../gui"
 import { DeleteIcon } from "../../../icons/delete"
+import { ForewardIcon } from "../../../icons/forward"
+import { BackwardIcon } from "../../../icons/backward"
 import classNames from "classnames"
 
 export function TimeEdit() {
@@ -72,6 +74,20 @@ const EditTools = () => {
         useTimeEditStore.getState().setColumnWidth(newValue)
     }
 
+    const nextStep = () => {
+        useMovementStore.getState().setPlayActive(false)
+        const currentTime = useMovementStore.getState().time
+        useMovementStore.getState().setTime(currentTime + standardTime - (currentTime % standardTime))
+    }
+
+    const previousStep = () => {
+        useMovementStore.getState().setPlayActive(false)
+        const currentTime = useMovementStore.getState().time
+        useMovementStore
+            .getState()
+            .setTime(currentTime - standardTime > 0 ? currentTime - standardTime + (currentTime % standardTime) : 0)
+    }
+
     return (
         <div
             style={{
@@ -83,7 +99,7 @@ const EditTools = () => {
                     type="button"
                     style={{ width: "100px", height: "30px" }}
                     onClick={() => addRow(1)}
-                    className="btn btn-primary">
+                    className="btn btn-warning">
                     addRow
                 </button>
                 <span style={{ width: "200px", color: "red", paddingTop: "5px" }}>
@@ -101,6 +117,18 @@ const EditTools = () => {
                         color: "#7f0000",
                     }}
                 />
+                <span style={{ width: "60px" }}></span>
+                <button
+                    className="ml-5"
+                    style={{ width: "100px", height: "30px", backgroundColor: "white", borderColor: "#202024" }}
+                    onClick={previousStep}>
+                    <BackwardIcon />
+                </button>
+                <button
+                    style={{ width: "100px", height: "30px", backgroundColor: "white", borderColor: "#202024" }}
+                    onClick={nextStep}>
+                    <ForewardIcon />
+                </button>
             </div>
         </div>
     )
@@ -109,7 +137,7 @@ const EditTools = () => {
 const HeaderColumn = (props: { time: number }) => {
     const columnWidth = useTimeEditStore((e) => e.columnWidth)
     const [isSelected, setIsSelected] = useState(false)
-    useMovementStore.subscribe((state) => updateTime(state.time))
+    useMovementStore.subscribe((state: { time: number }) => updateTime(state.time))
 
     const updateTime = (stateTime: number) => {
         if (props.time * standardTime <= stateTime && stateTime < (props.time + 1) * standardTime) {
@@ -123,8 +151,14 @@ const HeaderColumn = (props: { time: number }) => {
         }
     }
 
+    const setTime = () => {
+        useMovementStore.getState().setPlayActive(false)
+        useMovementStore.getState().setTime(props.time * standardTime)
+    }
+
     return (
         <div
+            onClick={setTime}
             style={{
                 backgroundColor: isSelected ? "#bf5f4e" : "grey",
                 display: "table-cell",
@@ -169,7 +203,7 @@ const getRawValue = (rawValue: AbstractParsedSteps<HierarchicalInfo> | undefined
     return rawValue.type == "raw" ? rawValue.value : null
 }
 
-function Column(props: { time: number; data?: pathData; showAddDescription: boolean }) {
+function Column(props: { time: number; data?: pathData; showArrow: boolean }) {
     const data = props.data
     const store = useBaseStore()
     const initTime = useMovementStore.getState().time
@@ -214,6 +248,7 @@ function Column(props: { time: number; data?: pathData; showAddDescription: bool
     }
 
     const setTime = () => {
+        useMovementStore.getState().setPlayActive(false)
         useMovementStore.getState().setTime(props.time * standardTime)
     }
 
@@ -343,7 +378,7 @@ function Column(props: { time: number; data?: pathData; showAddDescription: bool
                                 ) : null}
                             </div>
                         </div>
-                        {data.operation && columnWidth > 0.3 ? (
+                        {data.operation && columnWidth > 0.3 && props.showArrow ? (
                             <div
                                 style={{
                                     position: "absolute",
@@ -386,7 +421,6 @@ function Row(props: { key: number; data?: totalPathData[] }) {
     const setColumnNumber = useTimeEditStore((state) => state.setColumnNumber)
     const store = useBaseStore()
     let moveData = null
-    const otherData = null
     let startT = 0
     let endT = 0
     if (props.data) {
@@ -395,6 +429,7 @@ function Row(props: { key: number; data?: totalPathData[] }) {
             moveData = dataSave.map((v) => {
                 return v.data
             })
+            console.log(moveData)
             startT = moveData ? moveData[0].time ?? 0 : 0
             endT = moveData ? moveData[moveData.length - 1].time ?? 1 : 0
         }
@@ -577,18 +612,25 @@ function Row(props: { key: number; data?: totalPathData[] }) {
             {moveData ? (
                 <>
                     {Array.from(Array(startT).keys()).map((i) => {
-                        return <Column key={i} time={i} showAddDescription={false} />
+                        return <Column key={i} time={i} showArrow={false} />
                     })}
                     {moveData.map((v, i) => {
-                        return <Column key={i + startT} time={i + startT} data={v} showAddDescription={false} />
+                        return (
+                            <Column
+                                key={i + startT}
+                                time={i + startT}
+                                data={v}
+                                showArrow={i != 0 || !!v.operation?.name.includes("create")}
+                            />
+                        )
                     })}
                     {Array.from(Array(columnNumber - endT).keys()).map((i) => {
-                        return <Column key={i + endT + 1} time={i + endT + 1} showAddDescription={true} />
+                        return <Column key={i + endT + 1} time={i + endT + 1} showArrow={false} />
                     })}
                 </>
             ) : (
                 Array.from(Array(columnNumber + 1).keys()).map((i) => {
-                    return <Column key={i} time={i} showAddDescription={true} />
+                    return <Column key={i} time={i} showArrow={false} />
                 })
             )}
         </div>

@@ -1,6 +1,9 @@
 import Sllider from "@mui/material/Slider"
 import { Canvas, extend, useFrame, useThree } from "@react-three/fiber"
 import React, { useState, useEffect } from "react"
+import { PauseIcon } from "../../icons/pause"
+import { PlayIcon } from "../../icons/play"
+import { RepeatIcon } from "../../icons/repeat"
 import { CameraController } from "./camera"
 import Floor from "./floor"
 import MovementLogicSmallScreen from "./movementLogicSmallScreen"
@@ -117,9 +120,15 @@ export default function Slider(props: any) {
                             valueLabelDisplay="auto"
                         />
                         <div className="d-flex justify-content-between">
-                            <button onClick={play}>Play</button>
-                            <button onClick={pause}>Pause</button>
-                            <button onClick={reset}>Reset</button>
+                            <button type="button" className="btn btn-dark btn-sm" onClick={play}>
+                                <PlayIcon />
+                            </button>
+                            <button type="button" className="btn btn-dark btn-sm" onClick={pause}>
+                                <PauseIcon />
+                            </button>
+                            <button type="button" className="btn btn-dark btn-sm" onClick={reset}>
+                                <RepeatIcon />
+                            </button>
                         </div>
                     </div>
                 </div>
