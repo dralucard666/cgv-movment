@@ -70,7 +70,7 @@ export default function Slider(props: any) {
                     style={{
                         position: "absolute",
                         top: "70%",
-                        zIndex: "10000",
+                        zIndex: "0",
                         marginLeft: "10%",
                         marginRight: "10%",
                         width: "80%",
@@ -83,7 +83,7 @@ export default function Slider(props: any) {
                             style={{
                                 position: "absolute",
                                 bottom: "75%",
-                                zIndex: "10000",
+                                zIndex: "0",
                                 marginLeft: searchCanvasPos - 220 + "px",
                                 width: "500px",
                                 height: "350px",

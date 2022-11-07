@@ -103,7 +103,7 @@ export function GUI({ className, ...rest }: HTMLProps<HTMLDivElement>) {
                     <button
                         onClick={requestAdd.bind(null, store, "parallel")}
                         className="btn btn-sm btn-outline-success flex-grow-1 flex-basis-0">
-                        + Parllel
+                        + Parallel
                     </button>
                     <button
                         onClick={requestAdd.bind(null, store, "after")}

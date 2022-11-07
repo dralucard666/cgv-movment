@@ -85,7 +85,13 @@ const EditTools = () => {
         const currentTime = useMovementStore.getState().time
         useMovementStore
             .getState()
-            .setTime(currentTime - standardTime > 0 ? currentTime - standardTime + (currentTime % standardTime) : 0)
+            .setTime(
+                currentTime - standardTime > 0
+                    ? currentTime % standardTime == 0
+                        ? currentTime - standardTime
+                        : currentTime - (currentTime % standardTime)
+                    : 0
+            )
     }
 
     return (
@@ -162,8 +168,8 @@ const HeaderColumn = (props: { time: number }) => {
             style={{
                 backgroundColor: isSelected ? "#bf5f4e" : "grey",
                 display: "table-cell",
-                borderLeft: "5px inset #202024",
-                borderBottom: "5px inset #202024",
+                borderLeft: "2px inset #202024",
+                borderBottom: "2px inset #202024",
             }}
             className="text-center">
             <div style={{ width: columnWidth * 800 }}>Step: {props.time}</div>
@@ -184,8 +190,8 @@ const HeaderRow = () => {
                 style={{
                     backgroundColor: "grey",
                     display: "table-cell",
-                    borderLeft: "5px inset #202024",
-                    borderBottom: "5px inset #202024",
+                    borderLeft: "2px inset #202024",
+                    borderBottom: "2px inset #202024",
                 }}>
                 <div style={{ width: "150px" }}>Descriptions</div>
             </div>
@@ -290,8 +296,8 @@ function Column(props: { time: number; data?: pathData; showArrow: boolean }) {
                 backgroundColor: isSelected ? "#bf5f4e" : "#001c3d",
                 color: "white",
                 display: "table-cell",
-                borderLeft: "5px inset #202024",
-                borderBottom: "5px inset #202024",
+                borderLeft: "2px inset #202024",
+                borderBottom: "2px inset #202024",
             }}
             onClick={setTime}>
             <div
@@ -600,8 +606,8 @@ function Row(props: { key: number; data?: totalPathData[] }) {
                 style={{
                     backgroundColor: "grey",
                     display: "table-cell",
-                    borderLeft: "5px inset #202024",
-                    borderBottom: "5px inset #202024",
+                    borderLeft: "2px inset #202024",
+                    borderBottom: "2px inset #202024",
                 }}>
                 <div style={{ position: "relative", height: "200px", width: "150px" }}>
                     <div style={{ position: "absolute", paddingTop: 30, paddingLeft: 20 }}>

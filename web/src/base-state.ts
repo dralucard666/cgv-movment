@@ -54,6 +54,7 @@ import { Draft, freeze } from "immer"
 import { Matrix4, Color } from "three"
 import create, { GetState, SetState } from "zustand"
 import { combine, subscribeWithSelector } from "zustand/middleware"
+import { useMovementStore } from "./domains/movement/useMovementStore"
 import { UseBaseStore } from "./global"
 
 export type BaseState = (CombineEmpty<GuiState, TuiState> | CombineEmpty<TuiState, GuiState>) & {
@@ -338,6 +339,8 @@ function createBaseStateFunctions(
             const newDescriptions = descriptions.filter(
                 (description) => description.name != name && description.name !== idName
             )
+            const oldTreePath = useMovementStore.getState().treePath.filter((v) => !v.data.key.includes(name))
+            useMovementStore.getState().setTreePath(oldTreePath)
             set({
                 descriptions: newDescriptions,
                 selectedDescriptions: selectedDescriptions.filter(
