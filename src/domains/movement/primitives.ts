@@ -123,14 +123,14 @@ export class MovingObject extends Primitive {
 
     moveRotate(angle: possibleAngles, distance: possibleDistance) {
         const oldPo = this.position[this.position.length - 1]
-        const direction = this.position[this.position.length - 1].direction
+        const direction = this.position[this.position.length - 1].direction.clone()
         const newDirection = direction.applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
         const newPo = {
             position: oldPo.position.clone().add(newDirection.multiplyScalar(distance)),
             time: oldPo.time + standardSteps,
         } as ObjectPosition
         const newPosArray = structuredClone(this.position)
-        newPosArray.push({ ...newPo, direction: newDirection })
+        newPosArray.push({ ...newPo, direction: newDirection.normalize() })
         return new MovingObject(
             newPosArray,
             this.type,

@@ -10,6 +10,7 @@ import { AnimationClip } from "three"
 import { useFrame, useGraph } from "@react-three/fiber"
 import { movObject, useMovementStore } from "./useMovementStore"
 import { idPatternType } from "cgv"
+import { Box } from "@react-three/drei"
 
 type GLTFResult = GLTF & {
     nodes: {
@@ -87,6 +88,9 @@ export const Person = forwardRef((props: { id: string | null; scale: number; pos
     return (
         <>
             <group ref={group} dispose={null}>
+                <Box args={[8, 30, 8]} position={[0, 15, 0]}>
+                    <meshPhongMaterial color="#ff0000" opacity={0.0} transparent />
+                </Box>
                 <group name="Armature" rotation={[Math.PI / 2, 0, 0]} scale={props.scale}>
                     <primitive object={nodes.mixamorigHips} />
                     <skinnedMesh

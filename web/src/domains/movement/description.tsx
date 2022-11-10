@@ -103,6 +103,14 @@ function useSimpleInterpretation(
         }
         const subscription = applyToObject3D(
             of(newdefaultValue).pipe(
+                map((v) => {
+                    const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
+                        const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+                        return !(nodeName === name.replace("Start@", ""))
+                    })
+                    useMovementStore.getState().setTreePath(oldTreePath)
+                    return v
+                }),
                 toValue(),
                 interprete<Primitive, HierarchicalInfo>(description, operations, {
                     delay: store.getState().interpretationDelay,
@@ -113,6 +121,9 @@ function useSimpleInterpretation(
                                 const identifier = step.identifier
                                 if (
                                     identifier === "createOb" ||
+                                    identifier === "pedestrian" ||
+                                    identifier === "cyclist" ||
+                                    identifier === "car" ||
                                     identifier === "createFromPrimitive" ||
                                     identifier === "moveRight" ||
                                     identifier === "moveLeft" ||
@@ -182,9 +193,10 @@ function useInterpretation(
             subscription = applyToObject3D(
                 of(newdefaultValue).pipe(
                     map((v) => {
-                        const oldTreePath = useMovementStore
-                            .getState()
-                            .treePath.filter((v) => !v.data.key.includes(name))
+                        const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
+                            const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+                            return !(nodeName === name.replace("Start@", ""))
+                        })
                         useMovementStore.getState().setTreePath(oldTreePath)
                         return v
                     }),
@@ -207,6 +219,9 @@ function useInterpretation(
                                     const identifier = step.identifier
                                     if (
                                         identifier === "createOb" ||
+                                        identifier === "pedestrian" ||
+                                        identifier === "cyclist" ||
+                                        identifier === "car" ||
                                         identifier === "createFromPrimitive" ||
                                         identifier === "moveRight" ||
                                         identifier === "moveLeft" ||

@@ -1,7 +1,7 @@
 import Tooltip from "rc-tooltip"
 import { HTMLProps } from "react"
 import { useBaseStore } from "../../../global"
-import { EditIcon } from "../../../icons/edit"
+import { FilmEditIcon } from "../../../icons/film-edit"
 
 export function TimeEditToggle({ className, ...rest }: HTMLProps<HTMLDivElement>) {
     const store = useBaseStore()
@@ -14,7 +14,7 @@ export function TimeEditToggle({ className, ...rest }: HTMLProps<HTMLDivElement>
                 className={`${className} d-flex align-items-center justify-content-center btn ${
                     showTe ? "btn-primary" : "btn-secondary"
                 } btn-sm `}>
-                <EditIcon />
+                <FilmEditIcon />
             </div>
         </Tooltip>
     )

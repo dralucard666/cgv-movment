@@ -17,12 +17,16 @@ import { Person } from "./person"
 import { Marker } from "./marker"
 import { getExtraData } from "./objectDataScene"
 import { WorldState, WorldEnum } from "./movementData"
+import { UseBaseStore, useBaseStore } from "../../global"
 
-export default function MovementLogic(props: { id: string; data: movObject; world: WorldState }) {
+export default function MovementLogic(props: { id: string; data: movObject; world: WorldState; store: UseBaseStore }) {
     const object = useRef<any>()
     const text = useRef<any>()
     const marker = useRef<any>()
 
+    //const store = props.store
+    const descriptionName = props.id.split("_")[0]
+    console.log(descriptionName)
     const type = props.data.type
     const testType: ObjectType = ObjectType.Car as ObjectType
 
@@ -116,7 +120,12 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
             {/*             {isMarked ? <Marker type={type} scene={"bookstore"} ref={marker} /> : null}
              */}{" "}
             <Suspense fallback={null}>
-                {PersonComp}
+                <group
+                    onClick={() => {
+                        props.store.getState().selectDescription(descriptionName, false)
+                    }}>
+                    {PersonComp}
+                </group>
                 <TextComponent {...{ text: props.id }} ref={text} />
             </Suspense>
             <line ref={line}>

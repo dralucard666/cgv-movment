@@ -80,7 +80,11 @@ export interface PathNode {
 export const useMovementStore = create<TimeState>((set, get) => ({
     treePath: [],
     setTreePath: (newVal: RowType[]) => {
-        const rowData = createRowData(newVal)
+        const rowData = createRowData(
+            newVal.sort((a, b) => {
+                return a.data.key.localeCompare(b.data.key)
+            })
+        )
         const data = movementData(rowData.filter((v) => v[0].type === "moveData") as MultiPathData[][])
         return set((state) => {
             return { treePath: newVal, rowData: rowData, data }

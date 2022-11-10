@@ -91,7 +91,7 @@ div.table-scroll {
 }
 
 .box {
-    height: 50px;
+    height: 30px;
     background: white;
     text-align: center;
     color: black;
@@ -114,22 +114,22 @@ div.table-scroll {
 }
 
 .box:after {
-    border-left: 40px solid white;
-    border-right: 40px solid transparent;
-    border-top: 40px solid transparent;
-    border-bottom: 40px solid transparent;
-    right: -80px;
-    top: -14px;
+    border-left: 20px solid white;
+    border-right: 20px solid transparent;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    right: -40px;
+    top: -5px;
     width: 0;
     height: 0;
     display: block;
 }
 
 .box:before {
-    border-left: 26px solid transparent;
-    border-right: 26px solid transparent;
-    border-top: 26px solid transparent;
-    border-bottom: 26px solid transparent;
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
     left: 0px;
     top: -1px;
     width: 0;

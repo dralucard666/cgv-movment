@@ -339,7 +339,10 @@ function createBaseStateFunctions(
             const newDescriptions = descriptions.filter(
                 (description) => description.name != name && description.name !== idName
             )
-            const oldTreePath = useMovementStore.getState().treePath.filter((v) => !v.data.key.includes(name))
+            const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
+                const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+                return !(nodeName === name)
+            })
             useMovementStore.getState().setTreePath(oldTreePath)
             set({
                 descriptions: newDescriptions,

@@ -4,7 +4,7 @@ import { tileZoomRatio } from "cgv/domains/shape"
 import { operations } from "cgv/domains/movement/operations"
 import Head from "next/head"
 import React, { HTMLProps, Suspense, useEffect, useState } from "react"
-import { createBaseState } from "../src/base-state"
+import { BaseStore, createBaseState } from "../src/base-state"
 import { CameraController } from "../src/domains/movement/camera"
 import Floor from "../src/domains/movement/floor"
 import {
@@ -73,7 +73,7 @@ export default function Movement() {
     )
 }
 
-const Objects = (props: { world: WorldState }) => {
+const Objects = (props: { world: WorldState; store: UseBaseStore }) => {
     const data = useMovementStore((store) => store.data)
     // const playActive = useMovementStore((store) => store.playActive)
     return (
@@ -81,7 +81,13 @@ const Objects = (props: { world: WorldState }) => {
             {data
                 ? data.map((ob) => {
                       return (
-                          <MovementLogic key={ob.id} id={ob.id.replace("Start@", "")} data={ob} world={props.world} />
+                          <MovementLogic
+                              key={ob.id}
+                              id={ob.id.replace("Start@", "")}
+                              data={ob}
+                              world={props.world}
+                              store={props.store}
+                          />
                       )
                   })
                 : null}
@@ -204,7 +210,7 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         <PerspectiveCamera makeDefault far={10000} />
                         <CameraController />
                     </Bridge>
-                    <Objects world={world} />
+                    <Objects world={world} store={store} />
                 </Canvas>
                 {loading ? (
                     <div className="spinner-container">

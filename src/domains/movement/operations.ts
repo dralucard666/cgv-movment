@@ -47,6 +47,20 @@ function createObject(
     return of([new MovingObject([{ position, time, direction } as ObjectPosition], type, [], [], null)])
 }
 
+function createPedestrian(position: Vector3, time: number, direction: Vector3): Observable<Array<MovingObject>> {
+    return of([
+        new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Pedestrian, [], [], null),
+    ])
+}
+
+function createCyclist(position: Vector3, time: number, direction: Vector3): Observable<Array<MovingObject>> {
+    return of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Cyclist, [], [], null)])
+}
+
+function createCar(position: Vector3, time: number, direction: Vector3): Observable<Array<MovingObject>> {
+    return of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Car, [], [], null)])
+}
+
 function createObjectOfPrimitive(
     instance: Primitive,
     time: number,
@@ -90,6 +104,81 @@ export const operations: Operations<any> = {
                 ],
             }),
             () => ({ type: "raw", value: 0 }),
+            () => ({ type: "raw", value: 0 }),
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 1 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
+        ],
+    },
+    pedestrian: {
+        execute: simpleExecution<any>(createPedestrian),
+        includeThis: false,
+        defaultParameters: [
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
+            () => ({ type: "raw", value: 0 }),
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 1 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
+        ],
+    },
+    cyclist: {
+        execute: simpleExecution<any>(createCyclist),
+        includeThis: false,
+        defaultParameters: [
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
+            () => ({ type: "raw", value: 0 }),
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 1 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
+        ],
+    },
+    car: {
+        execute: simpleExecution<any>(createCar),
+        includeThis: false,
+        defaultParameters: [
+            () => ({
+                type: "operation",
+                identifier: "point3",
+                children: [
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                    { type: "raw", value: 0 },
+                ],
+            }),
             () => ({ type: "raw", value: 0 }),
             () => ({
                 type: "operation",

@@ -40,7 +40,6 @@ export function childrenSelectable(operationGuiMap: OperationGUIMap, steps: Sele
 }
 
 export function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "after") {
-    console.log("hier sind wir")
     store
         .getState()
         .request(
