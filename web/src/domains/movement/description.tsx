@@ -97,8 +97,12 @@ function useSimpleInterpretation(
     const setLoadingState = useMovementStore((e) => e.setLoadingState)
 
     newdefaultValue.staticObjects = world.staticObjects
+    const descriptionKnown = useMovementStore.getState().treePath.some((v) => {
+        const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+        return nodeName === name.replace("Start@", "")
+    })
     useEffect(() => {
-        if (ref.current == null || description == null) {
+        if (ref.current == null || description == null || descriptionKnown) {
             return
         }
         const subscription = applyToObject3D(
@@ -108,6 +112,7 @@ function useSimpleInterpretation(
                         const nodeName = v.data.key.replace("Start@", "").split("_")[0]
                         return !(nodeName === name.replace("Start@", ""))
                     })
+                    console.log("simpleInterpretation")
                     useMovementStore.getState().setTreePath(oldTreePath)
                     return v
                 }),
@@ -198,6 +203,7 @@ function useInterpretation(
                             return !(nodeName === name.replace("Start@", ""))
                         })
                         useMovementStore.getState().setTreePath(oldTreePath)
+                        console.log("Interpretation")
                         return v
                     }),
                     toValue(),

@@ -131,12 +131,12 @@ const SelectData = (
         setLoadingState(true)
 
         for (const dataLine of selectedData) {
-            const lineId = ("ID" + dataLine[0]) as string
+            const lineId = (dataLine[0]) as string
             const lineX = dataLine[1] as number
             const lineZ = dataLine[2] as number
             const lineY = dataLine[3] as number
             const lineSize = dataLine[4] as number
-            const lineTime = (dataLine[5] * standardTime) as number
+            const lineTime = (dataLine[5]) as number
             const lineStartDir = dataLine[6] as number[]
             const lineTypeString = dataLine[7] as string
             const lineType = getNumberType(lineTypeString)

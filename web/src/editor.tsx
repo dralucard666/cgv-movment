@@ -9,6 +9,9 @@ import classNames from "classnames"
 import { CloseIcon } from "./icons/close"
 import { useTimeEditStore } from "./domains/movement/TimeEdit/useTimeEditStore"
 import { ObjectType } from "cgv/domains/movement"
+import { BicycleIcon } from "./icons/bicycle"
+import { PersonIcon } from "./icons/person"
+import { TruckIcon } from "./icons/truck"
 
 export function Editor() {
     const store = useBaseStore()
@@ -75,7 +78,7 @@ export function Editor() {
             {showTimEdit ? (
                 <div
                     className="overflow-hidden position-absolute noselect"
-                    style={{ height: "40%", bottom: "0px", width: "100%" }}>
+                    style={{ height: "40%", bottom: "0px", width: "100%", backgroundColor: "#202024" }}>
                     <TimeEdit />
                 </div>
             ) : null}
@@ -144,64 +147,112 @@ function ObjectText(type: ObjectType | "primitive", position2: number[], directi
             return (
                 <>
                     <div className="row">
-                        <p className="text-center">Primitive</p>
+                        <p className="text-center">
+                            <h5>{name}</h5>
+                        </p>
+                    </div>
+                    <div className="row mt-3">
+                        <div className="col-8">Primitive</div>
                     </div>
                     <div className="row">
-                        <p className="text-center">{name}</p>
+                        <div className="col-8">Position: {position.toString()}</div>
                     </div>
-                    <span className="row">Position: {position.toString()}</span>
                 </>
             )
         case ObjectType.Cyclist:
             return (
                 <>
                     <div className="row">
-                        <p className="text-center">Cyclist</p>
+                        <p className="text-center">
+                            <h5>{name}</h5>
+                        </p>
                     </div>
-                    <div className="row">
-                        <p className="text-center">{name}</p>
+                    <div className="row mt-3">
+                        <div className="col-8">Cyclist</div>
                     </div>
-                    <div className="row">Position: {position.toString()}</div>
-                    <div className="row">Direction: {direction.toString()}</div>
+                    <div className="row mt-1">
+                        <div className="col-8">Position: {position.toString()}</div>
+                    </div>
+                    <div className="row mt-1">
+                        <div className="col-8">Direction: {direction.toString()}</div>
+                    </div>
+                    <div className="row justify-content-center mt-4">
+                        <div className="col-8 d-flex justify-content-center">
+                            <BicycleIcon width={100} height={100} />
+                        </div>
+                    </div>
                 </>
             )
         case ObjectType.Pedestrian:
             return (
                 <>
                     <div className="row">
-                        <p className="text-center">Pedestrian</p>
+                        <p className="text-center">
+                            <h5>{name}</h5>
+                        </p>
                     </div>
-                    <div className="row">
-                        <p className="text-center">{name}</p>
+                    <div className="row mt-3">
+                        <div className="col-8">Pedestrian</div>
                     </div>
-                    <div className="row">Position: {position.toString()}</div>
-                    <div className="row">Direction: {direction.toString()}</div>
+                    <div className="row mt-1">
+                        <div className="col-8">Position: {position.toString()}</div>
+                    </div>
+                    <div className="row mt-1">
+                        <div className="col-8">Direction: {direction.toString()}</div>
+                    </div>
+                    <div className="row justify-content-center mt-4">
+                        <div className="col-8 d-flex justify-content-center">
+                            <PersonIcon width={100} height={100} />
+                        </div>
+                    </div>
                 </>
             )
         case ObjectType.Car:
             return (
                 <>
                     <div className="row">
-                        <p className="text-center">Car</p>
+                        <p className="text-center">
+                            <h5>{name}</h5>
+                        </p>
                     </div>
-                    <div className="row">
-                        <p className="text-center">{name}</p>
+                    <div className="row mt-3">
+                        <div className="col-8">Car</div>
                     </div>
-                    <div className="row">Position: {position.toString()}</div>
-                    <div className="row">Direction: {direction.toString()}</div>
+                    <div className="row mt-1">
+                        <div className="col-8">Position: {position.toString()}</div>
+                    </div>
+                    <div className="row mt-1">
+                        <div className="col-8">Direction: {direction.toString()}</div>
+                    </div>
+                    <div className="row justify-content-center mt-4">
+                        <div className="col-8 d-flex justify-content-center">
+                            <TruckIcon width={100} height={100} />
+                        </div>
+                    </div>
                 </>
             )
         default:
             return (
                 <>
                     <div className="row">
-                        <p className="text-center">Pedestrian</p>
+                        <p className="text-center">
+                            <h5>{name}</h5>
+                        </p>
                     </div>
-                    <div className="row">
-                        <p className="text-center">{name}</p>
+                    <div className="row mt-3">
+                        <div className="col-8">Pedestrian</div>
                     </div>
-                    <div className="row">Position: {position.toString()}</div>
-                    <div className="row">Direction: {direction.toString()}</div>
+                    <div className="row mt-1">
+                        <div className="col-8">Position: {position.toString()}</div>
+                    </div>
+                    <div className="row mt-1">
+                        <div className="col-8">Direction: {direction.toString()}</div>
+                    </div>
+                    <div className="row justify-content-center mt-4">
+                        <div className="col-8 d-flex justify-content-center">
+                            <PersonIcon width={100} height={100} />
+                        </div>
+                    </div>
                 </>
             )
     }

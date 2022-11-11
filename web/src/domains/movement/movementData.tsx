@@ -1,3 +1,5 @@
+import Data from "../../../public/data/eth_eth/Langillustration_2.json"
+
 export enum WorldEnum {
     Bookstore,
     Students,
@@ -40,10 +42,11 @@ export const dataWorldState: WorldState[] = [
         scale: [260, 280, 310],
         position: [-20, 0, -20],
         rotation: [0, 0, 0],
-        name: "Bookstore",
+        name: "Bookstore Data",
         dataSize: 0,
         staticObjects: ["simonTest"],
         enumName: WorldEnum.Bookstore,
+        data: { testData: Data },
     },
     {
         image: "./models/eth.glb",

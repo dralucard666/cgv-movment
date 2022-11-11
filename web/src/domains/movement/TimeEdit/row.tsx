@@ -1,6 +1,6 @@
 import { SelectedSteps } from "cgv"
 import { Primitive } from "cgv/domains/movement"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import shallow from "zustand/shallow"
 import { useBaseStore } from "../../../global"
 import { requestAdd } from "../../../gui"
@@ -13,7 +13,6 @@ import { Column } from "./column"
 import { useTimeEditStore } from "./useTimeEditStore"
 
 export function Row(props: { key: number; data?: totalPathData[] }) {
-    const columnNumber = useTimeEditStore((state) => state.columnNumber)
     const setColumnNumber = useTimeEditStore((state) => state.setColumnNumber)
 
     const store = useBaseStore()
@@ -23,13 +22,17 @@ export function Row(props: { key: number; data?: totalPathData[] }) {
         (allRowsClosedToggle) => setIsOpen(allRowsClosedToggle),
         { equalityFn: shallow }
     )
-    const [nameOfRow, setNameOfRow] = useState(
-        props.data
-            ? props.data[0].type === "moveData"
-                ? (props.data as MultiPathData[])[props.data.length - 1].data.name.replace("Start@", "")
-                : (props.data as SinglePathData[])[0].key.replace("Start@", "")
-            : ""
-    )
+    const [nameOfRow, setNameOfRow] = useState("")
+
+    useEffect(() => {
+        setNameOfRow(
+            props.data
+                ? props.data[0].type === "moveData"
+                    ? (props.data as MultiPathData[])[props.data.length - 1].data.name.replace("Start@", "")
+                    : (props.data as SinglePathData[])[0].key.replace("Start@", "")
+                : ""
+        )
+    }, [props.data])
 
     let moveData = null
     let startT = 0
@@ -44,9 +47,13 @@ export function Row(props: { key: number; data?: totalPathData[] }) {
             endT = moveData ? moveData[moveData.length - 1].time ?? 1 : 0
         }
     }
-    if (endT > columnNumber) {
+    console.log("hier sind die Zeiten")
+    console.log(endT)
+    console.log(useTimeEditStore.getState().columnNumber)
+    if (endT > useTimeEditStore.getState().columnNumber) {
         setColumnNumber(endT + 1)
     }
+    const columnNumber = useTimeEditStore((state) => state.columnNumber)
 
     const selectRule = (descriptionName: string, primitive?: Primitive) => {
         useMovementStore.getState().setTime(0)
@@ -124,11 +131,7 @@ export function Row(props: { key: number; data?: totalPathData[] }) {
             const descriptionName = nameOfPath.split("_")[0]
             return (
                 <div>
-                    <div
-                        onClick={() =>
-                            store.getState().selectDescription(descriptionName, store.getState().shift ?? false)
-                        }
-                        className="text-truncate">
+                    <div onClick={() => selectRule(descriptionName)} className="text-truncate">
                         {nameOfPath}
                     </div>
                     <div className="mt-0">
