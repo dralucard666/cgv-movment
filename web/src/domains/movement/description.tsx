@@ -28,6 +28,7 @@ import { applyToObject3D } from "./apply-to-object"
 import { useMovementStore } from "./useMovementStore"
 import { Vector } from "three-csg-ts/lib/esm/Vector"
 import { useTimeEditStore } from "./TimeEdit/useTimeEditStore"
+import { Control } from "./control"
 /**
  *
  * @param p1
@@ -73,7 +74,7 @@ export function Description({ seed, name, index }: { seed: number; name: string;
     }
     return isSelected ? (
         <>
-            {/*<Control description={name} />*/}
+            {<Control description={name} />}
             {/*<DescriptionOutline rootNode={rootNode} />*/}
             <SelectedDescription seed={seed} name={name} />
             <HighlightDescription description={name} />
