@@ -14,13 +14,18 @@ export function DescriptionList({
     ...rest
 }: HTMLProps<HTMLDivElement> & { createDescriptionRequestData?: () => any }) {
     const store = useBaseStore()
-    const descriptions = store((state) => state.descriptions)
+    const descriptions = store((state) => state.descriptions.filter((v) => v.domain === state.domain))
     const selectedDescriptions = store((state) => state.selectedDescriptions)
     return (
         <div
             {...rest}
             style={style}
             className={`${className} bg-light rounded shadow w-100 overflow-hidden border d-flex flex-column`}>
+            <div className="p-2 border-top border-1">
+                <button onClick={() => store.getState().toggleDomain()} className={`btn text-primary btn-sm`}>
+                    {store.getState().domain}
+                </button>
+            </div>
             <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
                 <span>Descriptions</span>
                 <div className="flex-grow-1" />

@@ -17,12 +17,15 @@ import { Person } from "./person"
 import { Marker } from "./marker"
 import { getExtraData } from "./objectDataScene"
 import { WorldState, WorldEnum } from "./movementData"
+import { UseBaseStore, useBaseStore } from "../../global"
 
-export default function MovementLogic(props: { id: string; data: movObject; world: WorldState }) {
+export default function MovementLogic(props: { id: string; data: movObject; world: WorldState; store: UseBaseStore }) {
     const object = useRef<any>()
     const text = useRef<any>()
     const marker = useRef<any>()
 
+    //const store = props.store
+    const descriptionName = props.id.split("_")[0]
     const type = props.data.type
     const testType: ObjectType = ObjectType.Car as ObjectType
 
@@ -70,7 +73,7 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
             const arrayIndex = currentTime - data.startT
             const currentLine = data.framePos[arrayIndex]
             const direction = currentLine.direction
-            if (currentLine.position && object.current && line.current && direction && playActive) {
+            if (currentLine.position && object.current && line.current && direction) {
                 object.current.showObject()
                 line.current.visible = true
                 text.current.showText()
@@ -80,7 +83,13 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
                 const positionZ = currentLine.position[2]
 
                 const angle = -Math.atan2(direction[2], direction[0]) + rotationY
-                object.current.updatePosition(positionX, positionY, positionZ, angle, delta)
+                object.current.updatePosition(
+                    positionX,
+                    positionY,
+                    positionZ,
+                    angle,
+                    playActive ? delta : Math.random()
+                )
                 text.current.updatePosition(positionX + textMarginX, positionY + textMarginY, positionZ)
                 /*                 if (isMarked) {
                     marker.current.updatePosition(positionX, positionY, positionZ)
@@ -110,7 +119,12 @@ export default function MovementLogic(props: { id: string; data: movObject; worl
             {/*             {isMarked ? <Marker type={type} scene={"bookstore"} ref={marker} /> : null}
              */}{" "}
             <Suspense fallback={null}>
-                {PersonComp}
+                <group
+                    onClick={() => {
+                        props.store.getState().selectDescription(descriptionName, false)
+                    }}>
+                    {PersonComp}
+                </group>
                 <TextComponent {...{ text: props.id }} ref={text} />
             </Suspense>
             <line ref={line}>

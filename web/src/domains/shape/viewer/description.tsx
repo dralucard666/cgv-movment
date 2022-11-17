@@ -56,7 +56,10 @@ const point = new PointPrimitive(new Matrix4(), createPhongMaterialGenerator(new
 export function Descriptions({ x, y }: { x: number; y: number }) {
     const suffix = tileDescriptionSuffix(x, y)
     const descriptions = useBaseStoreState(
-        (state) => state.descriptions.filter((description) => description.name.endsWith(suffix)),
+        (state) =>
+            state.descriptions.filter(
+                (description) => description.name.endsWith(suffix) && description.domain === state.domain
+            ),
         shallowEqual
     )
     return (
@@ -285,13 +288,13 @@ function ColorizeSelection({ object, colorAdd }: { object: Object3D; colorAdd: n
     useEffect(() => {
         object.traverse((obj) => {
             if ("material" in obj) {
-                ;((obj as any).material as MeshBasicMaterial).color.addScalar(colorAdd)
+                ((obj as any).material as MeshBasicMaterial).color.addScalar(colorAdd)
             }
         })
         return () => {
             object.traverse((obj) => {
                 if ("material" in obj) {
-                    ;((obj as any).material as MeshBasicMaterial).color.addScalar(-colorAdd)
+                    ((obj as any).material as MeshBasicMaterial).color.addScalar(-colorAdd)
                 }
             })
         }

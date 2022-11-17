@@ -1,6 +1,10 @@
 import Sllider from "@mui/material/Slider"
 import { Canvas, extend, useFrame, useThree } from "@react-three/fiber"
+import { shallowEqual } from "cgv"
 import React, { useState, useEffect } from "react"
+import { PauseIcon } from "../../icons/pause"
+import { PlayIcon } from "../../icons/play"
+import { RepeatIcon } from "../../icons/repeat"
 import { CameraController } from "./camera"
 import Floor from "./floor"
 import MovementLogicSmallScreen from "./movementLogicSmallScreen"
@@ -25,7 +29,7 @@ export default function Slider(props: any) {
     const setTime = useMovementStore((e) => e.setTime)
     const min = useMovementStore((e) => e.minTime)
     const max = useMovementStore((e) => e.maxTime)
-    const visible = !!data
+    const visible = !!data && max != 0
     const [searchCanvasPos, setSearchCanvasPos] = useState<number | false>(false)
     const [smallScreenTime, setSmallScreenTime] = useState<number>(0)
 
@@ -66,8 +70,8 @@ export default function Slider(props: any) {
                 <div
                     style={{
                         position: "absolute",
-                        top: "80%",
-                        zIndex: "10000",
+                        top: "70%",
+                        zIndex: "0",
                         marginLeft: "10%",
                         marginRight: "10%",
                         width: "80%",
@@ -80,7 +84,7 @@ export default function Slider(props: any) {
                             style={{
                                 position: "absolute",
                                 bottom: "75%",
-                                zIndex: "10000",
+                                zIndex: "0",
                                 marginLeft: searchCanvasPos - 220 + "px",
                                 width: "500px",
                                 height: "350px",
@@ -117,9 +121,15 @@ export default function Slider(props: any) {
                             valueLabelDisplay="auto"
                         />
                         <div className="d-flex justify-content-between">
-                            <button onClick={play}>Play</button>
-                            <button onClick={pause}>Pause</button>
-                            <button onClick={reset}>Reset</button>
+                            <button type="button" className="btn btn-dark btn-sm" onClick={play}>
+                                <PlayIcon />
+                            </button>
+                            <button type="button" className="btn btn-dark btn-sm" onClick={pause}>
+                                <PauseIcon />
+                            </button>
+                            <button type="button" className="btn btn-dark btn-sm" onClick={reset}>
+                                <RepeatIcon />
+                            </button>
                         </div>
                     </div>
                 </div>

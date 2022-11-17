@@ -39,7 +39,7 @@ export function childrenSelectable(operationGuiMap: OperationGUIMap, steps: Sele
     return typeof steps == "string" || steps.type !== "operation" || operationGuiMap[steps.identifier] == null
 }
 
-function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "after") {
+export function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "after") {
     store
         .getState()
         .request(
@@ -56,7 +56,7 @@ function requestAdd(store: UseBaseStore, type: "parallel" | "before" | "after") 
         )
 }
 
-function requestReplace(store: UseBaseStore) {
+export function requestReplace(store: UseBaseStore) {
     store
         .getState()
         .request(
@@ -102,7 +102,7 @@ export function GUI({ className, ...rest }: HTMLProps<HTMLDivElement>) {
                     <button
                         onClick={requestAdd.bind(null, store, "parallel")}
                         className="btn btn-sm btn-outline-success flex-grow-1 flex-basis-0">
-                        + Parllel
+                        + Parallel
                     </button>
                     <button
                         onClick={requestAdd.bind(null, store, "after")}

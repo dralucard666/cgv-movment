@@ -81,8 +81,132 @@ a {
     }
 }
 
-.scroll {
-    overflow: hidden auto;
+div.table-scroll {
+    margin: 4px, 4px;
+    padding: 4px;
+    background-color: #202024;
+    overflow-x: auto;
+    overflow-y: auto;
+    white-space: nowrap;
+}
+
+.box {
+    height: 30px;
+    background: white;
+    text-align: center;
+    color: black;
+    position: relative;
+    display: table;
+    border-left: 2px solid white;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+}
+
+.box span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.box:before,
+.box:after {
+    content: "";
+    position: absolute;
+}
+
+.box:after {
+    border-left: 20px solid white;
+    border-right: 20px solid transparent;
+    border-top: 20px solid transparent;
+    border-bottom: 20px solid transparent;
+    right: -40px;
+    top: -5px;
+    width: 0;
+    height: 0;
+    display: block;
+}
+
+.box:before {
+    border-left: 13px solid transparent;
+    border-right: 13px solid transparent;
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
+    left: 0px;
+    top: -1px;
+    width: 0;
+    height: 0;
+    display: block;
+}
+
+.box-small {
+    height: 5px;
+    background: white;
+    text-align: center;
+    color: black;
+    position: relative;
+    display: table;
+    border-left: 2px solid white;
+    border-top: 2px solid white;
+    border-bottom: 2px solid white;
+}
+
+.box-small span {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.box-small:before,
+.box-small:after {
+    content: "";
+    position: absolute;
+}
+
+.box-small:after {
+    border-left: 10px solid white;
+    border-right: 10px solid transparent;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    right: -40px;
+    top: -5px;
+    width: 0;
+    height: 0;
+    display: block;
+}
+
+.box-small:before {
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    left: 0px;
+    top: -1px;
+    width: 0;
+    height: 0;
+    display: block;
+}
+
+@keyframes spinner {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+.loading-spinner {
+    z-index: 10001;
+    width: 300px;
+    height: 300px;
+    border: 12px solid #476a97; /* Light grey */
+    border-top: 12px solid #b5c8e0; /* Blue */
+    border-radius: 50%;
+    animation: spinner 1.5s linear infinite;
+}
+
+.spinner-container {
+    position: absolute;
+    top: 20%;
+    left: 40%;
+    z-index: 10001;
 }
 
 @keyframes spinner {

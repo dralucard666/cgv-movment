@@ -26,7 +26,9 @@ import { operations } from "cgv/domains/movement/operations"
 import { ObjectPosition, ObjectType, Primitive, MovingObject } from "cgv/domains/movement/primitives"
 import { applyToObject3D } from "./apply-to-object"
 import { useMovementStore } from "./useMovementStore"
-
+import { Vector } from "three-csg-ts/lib/esm/Vector"
+import { useTimeEditStore } from "./TimeEdit/useTimeEditStore"
+import { Control } from "./control"
 /**
  *
  * @param p1
@@ -48,7 +50,7 @@ function pathStartsWith(p1: HierarchicalPath, p2: HierarchicalPath): boolean {
     return true
 }
 
-const defaultValue = new Primitive([])
+const defaultValue = new Primitive([], new Vector3(0, 0, 0), [], [])
 
 export function Descriptions() {
     const descriptions = useBaseStoreState((state) => state.descriptions, shallowEqual)
@@ -63,6 +65,7 @@ export function Descriptions() {
 
 export function Description({ seed, name, index }: { seed: number; name: string; index: number }) {
     const store = useBaseStore()
+    const domain = useBaseStoreState((state) => state.domain)
     const isSelected = store((state) => state.selectedDescriptions.includes(name))
     const rootNode = store(
         (state) => state.grammar.find(({ name: nounName }) => isNounOfDescription(name, nounName))?.name
@@ -70,9 +73,9 @@ export function Description({ seed, name, index }: { seed: number; name: string;
     if (rootNode == null) {
         return null
     }
-    return isSelected ? (
+    return isSelected || domain === "movement" ? (
         <>
-            {/*<Control description={name} />*/}
+            {<Control description={name} />}
             {/*<DescriptionOutline rootNode={rootNode} />*/}
             <SelectedDescription seed={seed} name={name} />
             <HighlightDescription description={name} />
@@ -95,17 +98,61 @@ function useSimpleInterpretation(
     const world = useMovementStore((e) => e.world)
     const setLoadingState = useMovementStore((e) => e.setLoadingState)
 
-    newdefaultValue.staticObjects = world.staticObjects
+    const descriptionKnown = useMovementStore.getState().treePath.some((v) => {
+        const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+        return nodeName === name.replace("Start@", "")
+    })
     useEffect(() => {
-        if (ref.current == null || description == null) {
+        if (ref.current == null || description == null || descriptionKnown) {
             return
         }
         const subscription = applyToObject3D(
             of(newdefaultValue).pipe(
+                map((v) => {
+                    const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
+                        const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+                        return !(nodeName === name.replace("Start@", ""))
+                    })
+                    useMovementStore.getState().setTreePath(oldTreePath)
+                    return v
+                }),
                 toValue(),
                 interprete<Primitive, HierarchicalInfo>(description, operations, {
                     delay: store.getState().interpretationDelay,
                     seed,
+                    listeners: {
+                        onAfterStep: (step, value) => {
+                            if (value.raw.totalWorld) {
+                                const world = ref.current!.parent!
+                                world.updateMatrixWorld()
+                                value.raw.totalWorld = [world]
+                            }
+                            if (step.type === "operation") {
+                                const identifier = step.identifier
+                                if (
+                                    identifier === "createOb" ||
+                                    identifier === "pedestrian" ||
+                                    identifier === "cyclist" ||
+                                    identifier === "car" ||
+                                    identifier === "createFromPrimitive" ||
+                                    identifier === "moveRight" ||
+                                    identifier === "moveLeft" ||
+                                    identifier === "moveUp" ||
+                                    identifier === "moveDown" ||
+                                    identifier === "moveRotate" ||
+                                    identifier === "standStill" ||
+                                    identifier === "sample" ||
+                                    identifier === "moveUpAvoid" ||
+                                    identifier === "moveDownAvoid" ||
+                                    identifier === "moveRightAvoid" ||
+                                    identifier === "moveLeftAvoid" ||
+                                    identifier === "moveRotateAvoid"
+                                ) {
+                                    value.raw.grammarSteps.push(step)
+                                }
+                            }
+                        },
+                    },
                 })
             ),
             name,
@@ -134,6 +181,7 @@ function useInterpretation(
     ref: RefObject<ReactNode & Object3D>
 ) {
     const store = useBaseStore()
+    const movementStore = useMovementStore()
     const world = useMovementStore((e) => e.world)
     const setLoadingState = useMovementStore((e) => e.setLoadingState)
 
@@ -141,6 +189,8 @@ function useInterpretation(
         if (ref.current == null || description == null) {
             return
         }
+        movementStore.setData(null)
+        useTimeEditStore.getState().treePath = []
         let subscription: Subscription | undefined
 
         const beforeValuesMap = new Map<ParsedSteps, Array<Value<Primitive>>>()
@@ -153,10 +203,17 @@ function useInterpretation(
             .subscribe((entries) => store.getState().editIndices(entries, true))
         const name = description ? (description[0].name ? description[0].name : "") : ("" as unknown as string)
         const newdefaultValue = defaultValue
-        newdefaultValue.staticObjects = world.staticObjects
         try {
             subscription = applyToObject3D(
                 of(newdefaultValue).pipe(
+                    map((v) => {
+                        const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
+                            const nodeName = v.data.key.replace("Start@", "").split("_")[0]
+                            return !(nodeName === name.replace("Start@", ""))
+                        })
+                        useMovementStore.getState().setTreePath(oldTreePath)
+                        return v
+                    }),
                     toValue(),
                     interprete<Primitive, HierarchicalInfo>(description, operations, {
                         delay: store.getState().interpretationDelay,
@@ -164,6 +221,11 @@ function useInterpretation(
                         //TODO: we need a possibility to know when a value is removed
                         listeners: {
                             onAfterStep: (step, value) => {
+                                if (value.raw.totalWorld) {
+                                    const world = ref.current!.parent!
+                                    world.updateMatrixWorld()
+                                    value.raw.totalWorld = [world]
+                                }
                                 const beforeValues = beforeValuesMap.get(step)
                                 const beforeValue = beforeValues?.find((possibleBeforeValue) => {
                                     const relation = getIndexRelation(value.index, possibleBeforeValue.index)
@@ -172,6 +234,30 @@ function useInterpretation(
                                         relation === HierarchicalRelation.Equal
                                     )
                                 })
+                                if (step.type === "operation") {
+                                    const identifier = step.identifier
+                                    if (
+                                        identifier === "createOb" ||
+                                        identifier === "pedestrian" ||
+                                        identifier === "cyclist" ||
+                                        identifier === "car" ||
+                                        identifier === "createFromPrimitive" ||
+                                        identifier === "moveRight" ||
+                                        identifier === "moveLeft" ||
+                                        identifier === "moveUp" ||
+                                        identifier === "moveDown" ||
+                                        identifier === "moveRotate" ||
+                                        identifier === "standStill" ||
+                                        identifier === "sample" ||
+                                        identifier === "moveUpAvoid" ||
+                                        identifier === "moveDownAvoid" ||
+                                        identifier === "moveRightAvoid" ||
+                                        identifier === "moveLeftAvoid" ||
+                                        identifier === "moveRotateAvoid"
+                                    ) {
+                                        value.raw.grammarSteps.push(step)
+                                    }
+                                }
                                 if (beforeValue != null) {
                                     afterStepSubject.next({
                                         steps: step,
@@ -276,7 +362,7 @@ function HighlightDescription({ description }: { description: string }) {
                     .reduce<Array<Object3D>>((prev, selections) => {
                         const before = selections.values[0]?.before.raw
                         const after = selections.values[0]?.after.raw
-
+                        /*                         console.log(selections)
                         if (typeof selections.steps != "string") {
                             if (selections.steps.type == "operation") {
                                 const nameOfOperation = selections.steps.identifier
@@ -291,7 +377,7 @@ function HighlightDescription({ description }: { description: string }) {
                                     }
                                 }
                             }
-                        }
+                        } */
                         return prev.concat(
                             selections.values
                                 .filter((value) => (value as any).object != null)

@@ -4,7 +4,7 @@ import { tileZoomRatio } from "cgv/domains/shape"
 import { operations } from "cgv/domains/movement/operations"
 import Head from "next/head"
 import React, { HTMLProps, Suspense, useEffect, useState } from "react"
-import { createBaseState } from "../src/base-state"
+import { BaseStore, createBaseState } from "../src/base-state"
 import { CameraController } from "../src/domains/movement/camera"
 import Floor from "../src/domains/movement/floor"
 import {
@@ -36,8 +36,10 @@ import { useMovementStore } from "../src/domains/movement/useMovementStore"
 import Slider from "../src/domains/movement/slider"
 import shallow from "zustand/shallow"
 import MovementLogic from "../src/domains/movement/movementLogic"
+import { useRouter } from "next/router"
 import { standardTime } from "cgv/domains/movement"
 import { dataWorldState, WorldState } from "../src/domains/movement/movementData"
+import { TimeEditToggle } from "../src/domains/movement/TimeEdit/TimeEditToggle"
 
 const zoom = 18
 const globalLocalRatio = tileZoomRatio(0, zoom)
@@ -48,7 +50,7 @@ export default function Movement() {
     return (
         <>
             <Head>
-                <title>CGV | Shape Editorrrrrrrrrrrrrrrrr</title>
+                <title>CGV | Shape Editor</title>
                 <meta name="description" content=""></meta>
                 <meta name="viewport" content="initial-scale=1.0, width=device-width" />
             </Head>
@@ -64,20 +66,29 @@ export default function Movement() {
                 Viewer={Viewer}
                 operationGuiMap={{}}
                 operations={operations}>
+                {/*  <Editor /> */}
                 <Editor />
             </DomainProvider>
         </>
     )
 }
 
-const Objects = (props: { world: WorldState }) => {
+const Objects = (props: { world: WorldState; store: UseBaseStore }) => {
     const data = useMovementStore((store) => store.data)
     // const playActive = useMovementStore((store) => store.playActive)
     return (
         <>
             {data
                 ? data.map((ob) => {
-                      return <MovementLogic key={ob.id} id={ob.id} data={ob} world={props.world} />
+                      return (
+                          <MovementLogic
+                              key={ob.id}
+                              id={ob.id.replace("Start@", "")}
+                              data={ob}
+                              world={props.world}
+                              store={props.store}
+                          />
+                      )
                   })
                 : null}
         </>
@@ -92,6 +103,7 @@ const selectWorld = (
     store: UseBaseStore,
     resetMovementData: any
 ) => {
+    console.log(newVal)
     const selectedWorld = dataWorldState[newVal]
     setDataOptions(selectedWorld.data ?? null)
     setWorldName(newVal)
@@ -119,12 +131,12 @@ const SelectData = (
         setLoadingState(true)
 
         for (const dataLine of selectedData) {
-            const lineId = ("ID" + dataLine[0]) as string
+            const lineId = dataLine[0] as string
             const lineX = dataLine[1] as number
             const lineZ = dataLine[2] as number
             const lineY = dataLine[3] as number
             const lineSize = dataLine[4] as number
-            const lineTime = (dataLine[5] * standardTime) as number
+            const lineTime = dataLine[5] as number
             const lineStartDir = dataLine[6] as number[]
             const lineTypeString = dataLine[7] as string
             const lineType = getNumberType(lineTypeString)
@@ -189,7 +201,6 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                     })}
                     dpr={global.window == null ? 1 : window.devicePixelRatio}>
                     <Bridge>
-                        <axesHelper />
                         <Descriptions />
                         <Suspense fallback={null}>
                             <Floor world={world} />
@@ -198,11 +209,13 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         <PerspectiveCamera makeDefault far={10000} />
                         <CameraController />
                     </Bridge>
-                    <Objects world={world} />
+                    <Objects world={world} store={store} />
                 </Canvas>
-                    {loading ? <div className="spinner-container">
+                {loading ? (
+                    <div className="spinner-container">
                         <div className="loading-spinner"></div>
-                    </div> : null}
+                    </div>
+                ) : null}
                 <Slider />
                 <div
                     className="d-flex flex-row justify-content-between position-absolute"
@@ -214,11 +227,14 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         top: 0,
                         bottom: 0,
                     }}>
-                    <div className="d-flex flex-column my-3 ms-3" style={{ maxWidth: 300 }}>
-                        <div
+                    <div className="d-flex flex-column my-3 ms-3" style={{ maxWidth: 200 }}>
+                        <DescriptionList
+                            createDescriptionRequestData={() => ({})}
                             style={{ pointerEvents: "all" }}
-                            className={`bg-light rounded shadow w-100 overflow-hidden border d-flex flex-column`}>
-                            {loading ? <div>LOADING</div> : null}
+                            className="mb-3">
+                            <div className="p-2 border-top border-1">
+                                <SummarizeButton />
+                            </div>
                             <div className="w-100 mt-2">Select World</div>
                             <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
                                 <select
@@ -271,10 +287,14 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                                     </div>
                                 </>
                             ) : null}
-                        </div>
+                        </DescriptionList>
                         <div className="flex-grow-1" />
                         <div style={{ pointerEvents: "all" }} className="d-flex flex-row">
+                            <MultiSelectButton className="me-2" />
                             {/*<SpeedSelection className="me-2" />*/}
+                            <DownloadButton className="me-2" />
+                            <FlyCameraButton className="me-2" />
+                            <ShowError />
                         </div>
                     </div>
                     <div className="d-flex flex-column align-items-end m-3">
@@ -286,6 +306,11 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                             }}
                         />
                         <div className="flex-grow-1"></div>
+                        <div className="d-flex flex-row" style={{ pointerEvents: "all" }}>
+                            <TextEditorToggle className="me-2" />
+                            <TimeEditToggle className="me-2" />
+                            {/*<FullscreenToggle rootRef={null} />*/}
+                        </div>
                     </div>
                 </div>
                 {children}
@@ -299,7 +324,7 @@ const Clock = () => {
     const maxTime = useMovementStore((e) => e.maxTime)
 
     useFrame(({ clock }) => {
-        if (useMovementStore.getState().getPlayActive() && useMovementStore.getState().time < maxTime) {
+        if (useMovementStore.getState().getPlayActive() && useMovementStore.getState().time + 1 < maxTime) {
             useMovementStore.getState().incrementTime(1)
         }
     })

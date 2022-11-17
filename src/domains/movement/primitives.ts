@@ -1,5 +1,7 @@
 import { of } from "rxjs"
-import { Vector3 } from "three"
+import { Box3, Object3D, Raycaster, Scene, Vector3 } from "three"
+import { AbstractParsedSteps } from "../../parser"
+import { HierarchicalInfo } from "../../util"
 import { possibleAngles, possibleDistance } from "./operations"
 
 export enum ObjectType {
@@ -8,7 +10,8 @@ export enum ObjectType {
     Car,
 }
 
-export const standardTime = 15
+export const standardTime = 40
+export const standardSteps = 1
 
 export interface ObjectPosition {
     position: Vector3
@@ -17,129 +20,188 @@ export interface ObjectPosition {
 }
 
 export class Primitive {
-    constructor(public staticObjects: any[]) {}
+    constructor(
+        public staticObjects: Object3D[],
+        public startPosition: Vector3,
+        public grammarSteps: AbstractParsedSteps<HierarchicalInfo>[],
+        public totalWorld: Object3D[]
+    ) {}
 
-    createPrimitive(position: Vector3, time: number, direction: Vector3, type: ObjectType) {
-        return new MovingObject([{ position, time, direction } as ObjectPosition], type, this.staticObjects)
+    createMovementObject(time: number, direction: Vector3, type: ObjectType) {
+        return new MovingObject(
+            [{ position: this.startPosition, time, direction } as ObjectPosition],
+            type,
+            this.staticObjects,
+            [...this.grammarSteps],
+            this.totalWorld
+        )
     }
 }
 
 export class MovingObject extends Primitive {
-    constructor(public position: ObjectPosition[], public type: ObjectType, public staticObjects: any[]) {
-        super(staticObjects)
+    constructor(
+        public position: ObjectPosition[],
+        public type: ObjectType,
+        public staticObjects: Object3D[],
+        public grammarSteps: AbstractParsedSteps<HierarchicalInfo>[],
+        public totalWorld: Object3D[]
+    ) {
+        super(staticObjects, position[0].position, grammarSteps, totalWorld)
+
+        /*         console.log(staticObjects)
+        console.log(this.totalWorld)
+        if (this.totalWorld.length > 0) {
+            this.staticObjects.map((v) => this.totalWorld[0].add(v))
+        }
+        console.log(this.totalWorld) */
     }
 
     moveRight(distance: number) {
         const oldPo = this.position[this.position.length - 1]
         const newPo = {
             position: oldPo.position.clone().setX(oldPo.position.x + distance),
-            time: oldPo.time + standardTime,
+            time: oldPo.time + standardSteps,
         } as ObjectPosition
 
-        const newTimeSteps = this.returnNewTimeSteps(oldPo, newPo, new Vector3(1, 0, 0))
         const newPosArray = structuredClone(this.position)
-        newPosArray.push(...newTimeSteps)
-        return new MovingObject(newPosArray, this.type, this.staticObjects)
+        newPosArray.push({ ...newPo, direction: new Vector3(1, 0, 0) })
+        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
     }
 
     moveLeft(distance: number) {
         const oldPo = this.position[this.position.length - 1]
         const newPo = {
             position: oldPo.position.clone().setX(oldPo.position.x - distance),
-            time: oldPo.time + standardTime,
+            time: oldPo.time + standardSteps,
         } as ObjectPosition
 
-        const newTimeSteps = this.returnNewTimeSteps(oldPo, newPo, new Vector3(-1, 0, 0))
         const newPosArray = structuredClone(this.position)
-        newPosArray.push(...newTimeSteps)
-        return new MovingObject(newPosArray, this.type, this.staticObjects)
+        newPosArray.push({ ...newPo, direction: new Vector3(-1, 0, 0) })
+        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
     }
 
     moveUp(distance: number) {
         const oldPo = this.position[this.position.length - 1]
         const newPo = {
             position: oldPo.position.clone().setZ(oldPo.position.z + distance),
-            time: oldPo.time + standardTime,
+            time: oldPo.time + standardSteps,
         } as ObjectPosition
 
-        const newTimeSteps = this.returnNewTimeSteps(oldPo, newPo, new Vector3(0, 0, 1))
         const newPosArray = structuredClone(this.position)
-        newPosArray.push(...newTimeSteps)
-        return new MovingObject(newPosArray, this.type, this.staticObjects)
+        newPosArray.push({ ...newPo, direction: new Vector3(0, 0, 1) })
+        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
     }
 
     moveDown(distance: number) {
         const oldPo = this.position[this.position.length - 1]
         const newPo = {
             position: oldPo.position.clone().setZ(oldPo.position.z - distance),
-            time: oldPo.time + standardTime,
+            time: oldPo.time + standardSteps,
         } as ObjectPosition
 
-        const newTimeSteps = this.returnNewTimeSteps(oldPo, newPo, new Vector3(0, 0, -1))
         const newPosArray = structuredClone(this.position)
-        newPosArray.push(...newTimeSteps)
-        return new MovingObject(newPosArray, this.type, this.staticObjects)
+        newPosArray.push({ ...newPo, direction: new Vector3(0, 0, -1) })
+        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+    }
+
+    moveUpAvoid(distance: number) {
+        const currentPo = this.position[this.position.length - 1]
+        const raycaster = new Raycaster(currentPo.position, new Vector3(0, 0, 1), undefined, distance)
+        if (this.totalWorld.length > 0) {
+            const world = this.totalWorld[0]!
+            const intersectedObjects = raycaster.intersectObjects([world], true)
+            if (intersectedObjects.length == 0) {
+                return this.moveUp(distance)
+            }
+            return this.moveRight(distance)
+        }
+        return this.moveUp(distance)
+    }
+
+    moveDownAvoid(distance: number) {
+        const currentPo = this.position[this.position.length - 1]
+        const raycaster = new Raycaster(currentPo.position, new Vector3(0, 0, -1), undefined, distance)
+        if (this.totalWorld.length > 0) {
+            const world = this.totalWorld[0]!
+            const intersectedObjects = raycaster.intersectObjects([world], true)
+            if (intersectedObjects.length == 0) {
+                return this.moveDown(distance)
+            }
+            return this.moveRight(distance)
+        }
+        return this.moveDown(distance)
+    }
+
+    moveLeftAvoid(distance: number) {
+        const currentPo = this.position[this.position.length - 1]
+        const raycaster = new Raycaster(currentPo.position, new Vector3(-1, 0, 0), undefined, distance)
+        if (this.totalWorld.length > 0) {
+            const world = this.totalWorld[0]!
+            const intersectedObjects = raycaster.intersectObjects([world], true)
+            if (intersectedObjects.length == 0) {
+                return this.moveLeft(distance)
+            }
+            return this.moveUp(distance)
+        }
+        return this.moveLeft(distance)
+    }
+
+    moveRightAvoid(distance: number) {
+        const currentPo = this.position[this.position.length - 1]
+        const raycaster = new Raycaster(currentPo.position, new Vector3(1, 0, 0), undefined, distance)
+        if (this.totalWorld.length > 0) {
+            const world = this.totalWorld[0]!
+            const intersectedObjects = raycaster.intersectObjects([world], true)
+            if (intersectedObjects.length == 0) {
+                return this.moveRight(distance)
+            }
+            return this.moveUp(distance)
+        }
+        return this.moveRight(distance)
     }
 
     moveRotate(angle: possibleAngles, distance: possibleDistance) {
         const oldPo = this.position[this.position.length - 1]
-        const direction = this.position[this.position.length - 1].direction
+        const direction = oldPo.direction.clone()
         const newDirection = direction.applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
         const newPo = {
             position: oldPo.position.clone().add(newDirection.multiplyScalar(distance)),
-            time: oldPo.time + standardTime,
+            time: oldPo.time + standardSteps,
         } as ObjectPosition
-        const newTimeSteps = this.returnNewTimeSteps2(oldPo, newPo, newDirection.normalize())
         const newPosArray = structuredClone(this.position)
-        newPosArray.push(...newTimeSteps)
-        return new MovingObject(newPosArray, this.type, this.staticObjects)
+        newPosArray.push({ ...newPo, direction: newDirection.normalize() })
+        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+    }
+
+    moveRotateTurnClock(angle: possibleAngles, distance: possibleDistance) {
+        if (this.totalWorld.length > 0) {
+            const world = this.totalWorld[0]!
+            const currentPo = this.position[this.position.length - 1].position.clone()
+            const direction = this.position[this.position.length - 1].direction.clone().normalize()
+            const positionBehind = currentPo
+
+            for (let i = 0; i < 12; i++) {
+                const newAngle = angle + i * 30
+                const newDirection = direction.clone().applyAxisAngle(new Vector3(0, 1, 0), (-newAngle / 180) * Math.PI)
+                const raycaster = new Raycaster(positionBehind, newDirection, undefined, distance)
+
+                const intersectedObjects = raycaster.intersectObjects([world], true)
+                if (intersectedObjects.length == 0) {
+                    return this.moveRotate(newAngle as possibleAngles, distance)
+                }
+            }
+            return this.moveRight(distance)
+        } else {
+            return this.moveRotate(angle as possibleAngles, distance)
+        }
     }
 
     standStill() {
         const oldPo = this.position[this.position.length - 1]
         const oldTime = oldPo.time
         const newPosArray = structuredClone(this.position)
-        for (let time = oldTime + 1; time < oldTime + 1 + standardTime; time++) {
-            const newEntry = { ...oldPo, time } as ObjectPosition
-            newPosArray.push(newEntry)
-        }
-        return new MovingObject(newPosArray, this.type, this.staticObjects)
-    }
-
-    returnNewTimeSteps(oldPo: ObjectPosition, newPo: ObjectPosition, direction: Vector3): ObjectPosition[] {
-        const missingPos: ObjectPosition[] = []
-        const oldVec = oldPo.position
-        const newVec = newPo.position
-        const diffVec = newVec.sub(oldVec)
-        const oldTime = oldPo.time
-        const diffTime = newPo.time - oldTime
-        for (let i = 1; i < diffTime + 1; i++) {
-            const addVec = diffVec.clone().multiplyScalar(i / diffTime)
-            missingPos.push({
-                time: oldTime + i,
-                position: oldVec.clone().add(addVec),
-                direction: direction.clone(),
-            } as ObjectPosition)
-        }
-        return missingPos
-    }
-
-    returnNewTimeSteps2(oldPo: ObjectPosition, newPo: ObjectPosition, direction: Vector3): ObjectPosition[] {
-        const missingPos: ObjectPosition[] = []
-        const oldVec = oldPo.position
-        const newVec = newPo.position
-        const diffVec = newVec.sub(oldVec)
-        const oldTime = oldPo.time
-        const diffTime = newPo.time - oldTime
-        for (let i = 1; i < diffTime + 1; i++) {
-            const addVec = diffVec.clone().multiplyScalar(i / diffTime)
-            missingPos.push({
-                time: oldTime + i,
-                position: oldVec.clone().add(addVec),
-                direction: direction.clone(),
-            } as ObjectPosition)
-        }
-        return missingPos
+        newPosArray.push({ position: oldPo.position, direction: oldPo.direction, time: oldTime + standardSteps })
+        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
     }
 
     staticObjectAhead() {
