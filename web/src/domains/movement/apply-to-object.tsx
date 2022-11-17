@@ -22,9 +22,11 @@ export function applyToObject3D(
                 object.add(data)
                 object.updateMatrixWorld()
             }
-            if (data instanceof Array<Mesh>) {
-                object.add(...data)
-                object.updateMatrixWorld()
+            if (Array.isArray(data) && data.length > 0) {
+                if (data[0] instanceof Mesh) {
+                    object.add(...data)
+                    object.updateMatrixWorld()
+                }
             }
             if (data instanceof MovingObject) {
                 const startStep = data.position[0].time
