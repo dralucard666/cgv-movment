@@ -16,10 +16,10 @@ export function TimeEdit() {
     const rowNumber = useTimeEditStore((state) => state.rowNumber)
     return (
         <>
-            <div style={{ height: "12%" }}>
+            <div style={{ height: "13%" }}>
                 <EditTools />
             </div>
-            <div style={{ height: "88%" }}>
+            <div style={{ height: "87%" }}>
                 <div
                     style={{
                         overflowX: "auto",
@@ -77,12 +77,10 @@ const EditTools = () => {
     }
 
     return (
-        <div
-            style={{
-                height: "100%",
-                backgroundColor: "#202024",
-            }}>
-            <div className="row m-2" style={{ position: "absolute" }}>
+        <div>
+            <div
+                className="row w-100"
+                style={{ position: "absolute", backgroundColor: "#202024", marginTop: 2, marginLeft: 2, zIndex:1 }}>
                 <button
                     type="button"
                     style={{ width: "100px", height: "30px" }}

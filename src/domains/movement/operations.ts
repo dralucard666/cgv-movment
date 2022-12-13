@@ -1,10 +1,11 @@
-import { Box3, BoxGeometry, BufferGeometry, Color, Mesh, MeshBasicMaterial, Object3D, Vector3 } from "three"
-import { Observable, of } from "rxjs"
+import { Box3, BoxGeometry, BufferGeometry, Color, Mesh, MeshBasicMaterial, Object3D, Scene, Vector3 } from "three"
+import { combineLatest, Observable, of, switchMap } from "rxjs"
 import { defaultOperations } from ".."
-import { Operations, simpleExecution } from "../../interpreter"
+import { Operations, simpleExecution, simpleSceneExecution } from "../../interpreter"
 import { ObjectPosition, ObjectType, MovingObject, Primitive } from "./primitives"
 import { createPhongMaterialGenerator, PointPrimitive } from "../shape/primitive"
 import { makeTranslationMatrix } from "../shape"
+import Seedrandom from "seedrandom"
 
 export type possibleAngles = 0 | 30 | 60 | 90 | 120 | 150 | 180 | 210 | 240 | 270 | 300 | 330 | 360
 
@@ -47,46 +48,91 @@ function computeStandStill(instance: MovingObject): Observable<Array<MovingObjec
 }
 
 function createObject(
+    variables: {
+        [x: string]: Observable<any>
+    },
     position: Vector3,
     time: number,
     type: ObjectType,
-    direction: Vector3
+    angle: number
 ): Observable<Array<MovingObject>> {
-    return of([new MovingObject([{ position, time, direction } as ObjectPosition], type, [], [], [])])
+    const seed$ = variables.seed
+    const environment$ = variables.environment
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    return combineLatest([seed$, environment$]).pipe(
+        switchMap(([s, e]) => of([new MovingObject([{ position, time, direction } as ObjectPosition], type, [], e)]))
+    )
 }
 
 function createPedestrian(
+    variables: {
+        [x: string]: Observable<any>
+    },
     position: Vector3,
     time: number,
-    direction: Vector3,
-    staticObjects: Object3D[]
+    angle: number
 ): Observable<Array<MovingObject>> {
-    return of([
-        new MovingObject(
-            [{ position, time, direction } as ObjectPosition],
-            ObjectType.Pedestrian,
-            staticObjects,
-            [],
-            []
-        ),
-    ])
+    const seed$ = variables.seed
+    const environment$ = variables.environment
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    return combineLatest([seed$, environment$]).pipe(
+        switchMap(([s, e]) =>
+            of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Pedestrian, [], e)])
+        )
+    )
 }
 
-function createCyclist(position: Vector3, time: number, direction: Vector3): Observable<Array<MovingObject>> {
-    return of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Cyclist, [], [], [])])
+function createCyclist(
+    variables: {
+        [x: string]: Observable<any>
+    },
+    position: Vector3,
+    time: number,
+    angle: Vector3
+): Observable<Array<MovingObject>> {
+    const seed$ = variables.seed
+    const environment$ = variables.environment
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    return combineLatest([seed$, environment$]).pipe(
+        switchMap(([s, e]) =>
+            of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Cyclist, [], e)])
+        )
+    )
 }
 
-function createCar(position: Vector3, time: number, direction: Vector3): Observable<Array<MovingObject>> {
-    return of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Car, [], [], [])])
+function createCar(
+    variables: {
+        [x: string]: Observable<any>
+    },
+    position: Vector3,
+    time: number,
+    angle: number
+): Observable<Array<MovingObject>> {
+    const seed$ = variables.seed
+    const environment$ = variables.environment
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    return combineLatest([seed$, environment$]).pipe(
+        switchMap(([s, e]) =>
+            of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Car, [], e)])
+        )
+    )
 }
 
 function createObjectOfPrimitive(
+    variables: {
+        [x: string]: Observable<any>
+    },
     instance: Primitive,
     time: number,
     type: ObjectType,
-    direction: Vector3
+    angle: number
 ): Observable<Array<MovingObject>> {
-    return of([instance.createMovementObject(time, direction, type)])
+    const seed$ = variables.seed
+    const environment$ = variables.environment
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    return combineLatest([seed$, environment$]).pipe(
+        switchMap(([s, e]) => of([instance.createMovementObject(time, direction, type)]))
+    )
 }
 
 function computePoint3(x: number, y: number, z: number): Observable<Array<Vector3>> {
@@ -97,14 +143,39 @@ function distanceToStatic(instance: MovingObject): Observable<Array<Vector3>> {
     return of([instance.staticObjectAhead()])
 }
 
-function computeSample(amount: number): Observable<Array<Primitive>> {
-    const primitiveArray: Primitive[] = []
-    for (let index = 0; index < amount; index++) {
-        primitiveArray.push(
-            new Primitive([], new Vector3(Math.random() * 600 - 250, 0, Math.random() * 600 - 350), [], [])
-        )
-    }
-    return of(primitiveArray)
+function computeSample(
+    variables: {
+        [x: string]: Observable<any>
+    },
+    amount: number
+): Observable<Array<Primitive>> {
+    const seed$ = variables.seed
+    const environment$ = variables.environment
+    return combineLatest([seed$, environment$]).pipe(
+        switchMap(([s, e]) => {
+            const primitiveArray: Primitive[] = []
+            for (let index = 0; index < amount; index++) {
+                const x = Seedrandom(s + "x" + index)()
+                const y = Seedrandom(s + "y" + index)()
+                const xArea = Seedrandom(s + "areax" + index)()
+                const yArea = Seedrandom(s + "areay" + index)()
+                if (xArea < 0.3) {
+                    const pseudoX = Math.round(x * 1240) - 700
+                    const pseudoY = Math.round(y * 980) - 480
+                    primitiveArray.push(new Primitive(new Vector3(pseudoX, 0, pseudoY), [], e))
+                } else if (xArea >= 0.3 && yArea > 0.4) {
+                    const pseudoX = Math.round(x * 900) - 540
+                    const pseudoY = Math.round(y * 290) - 220
+                    primitiveArray.push(new Primitive(new Vector3(pseudoX, 0, pseudoY), [], e))
+                } else if (xArea >= 0.3 && yArea <= 0.4) {
+                    const pseudoX = Math.round(x * 1170) - 670
+                    const pseudoY = Math.round(y * 250) + 270
+                    primitiveArray.push(new Primitive(new Vector3(pseudoX, 0, pseudoY), [], e))
+                }
+            }
+            return of(primitiveArray)
+        })
+    )
 }
 
 function addRectangle(position: Vector3, sideLength: number): Observable<Array<Object3D>> {
@@ -137,7 +208,7 @@ function leftAvoid(instance: MovingObject, distance: number): Observable<Array<M
 export const operations: Operations<any> = {
     ...defaultOperations,
     createOb: {
-        execute: simpleExecution<any>(createObject),
+        execute: simpleSceneExecution<any>(createObject),
         includeThis: false,
         defaultParameters: [
             () => ({
@@ -151,19 +222,11 @@ export const operations: Operations<any> = {
             }),
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
-            () => ({
-                type: "operation",
-                identifier: "point3",
-                children: [
-                    { type: "raw", value: 1 },
-                    { type: "raw", value: 0 },
-                    { type: "raw", value: 0 },
-                ],
-            }),
+            () => ({ type: "raw", value: 0 }),
         ],
     },
     pedestrian: {
-        execute: simpleExecution<any>(createPedestrian),
+        execute: simpleSceneExecution<any>(createPedestrian),
         includeThis: false,
         defaultParameters: [
             () => ({
@@ -176,24 +239,11 @@ export const operations: Operations<any> = {
                 ],
             }),
             () => ({ type: "raw", value: 0 }),
-            () => ({
-                type: "operation",
-                identifier: "point3",
-                children: [
-                    { type: "raw", value: 1 },
-                    { type: "raw", value: 0 },
-                    { type: "raw", value: 0 },
-                ],
-            }),
-            () => ({
-                type: "operation",
-                identifier: "multipleStatic",
-                children: [],
-            }),
+            () => ({ type: "raw", value: 0 }),
         ],
     },
     cyclist: {
-        execute: simpleExecution<any>(createCyclist),
+        execute: simpleSceneExecution<any>(createCyclist),
         includeThis: false,
         defaultParameters: [
             () => ({
@@ -206,19 +256,11 @@ export const operations: Operations<any> = {
                 ],
             }),
             () => ({ type: "raw", value: 0 }),
-            () => ({
-                type: "operation",
-                identifier: "point3",
-                children: [
-                    { type: "raw", value: 1 },
-                    { type: "raw", value: 0 },
-                    { type: "raw", value: 0 },
-                ],
-            }),
+            () => ({ type: "raw", value: 0 }),
         ],
     },
     car: {
-        execute: simpleExecution<any>(createCar),
+        execute: simpleSceneExecution<any>(createCar),
         includeThis: false,
         defaultParameters: [
             () => ({
@@ -231,32 +273,16 @@ export const operations: Operations<any> = {
                 ],
             }),
             () => ({ type: "raw", value: 0 }),
-            () => ({
-                type: "operation",
-                identifier: "point3",
-                children: [
-                    { type: "raw", value: 1 },
-                    { type: "raw", value: 0 },
-                    { type: "raw", value: 0 },
-                ],
-            }),
+            () => ({ type: "raw", value: 0 }),
         ],
     },
     createFromPrimitive: {
-        execute: simpleExecution<any>(createObjectOfPrimitive),
+        execute: simpleSceneExecution<any>(createObjectOfPrimitive),
         includeThis: true,
         defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
-            () => ({
-                type: "operation",
-                identifier: "point3",
-                children: [
-                    { type: "raw", value: 1 },
-                    { type: "raw", value: 0 },
-                    { type: "raw", value: 0 },
-                ],
-            }),
+            () => ({ type: "raw", value: 0 }),
         ],
     },
     point3: {
@@ -329,7 +355,7 @@ export const operations: Operations<any> = {
         defaultParameters: [],
     },
     sample: {
-        execute: simpleExecution<any>(computeSample),
+        execute: simpleSceneExecution<any>(computeSample),
         includeThis: false,
         defaultParameters: [() => ({ type: "raw", value: 10 })],
     },

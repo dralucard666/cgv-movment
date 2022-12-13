@@ -120,16 +120,18 @@ export default function Slider(props: any) {
                             onChange={onHover}
                             valueLabelDisplay="auto"
                         />
-                        <div className="d-flex justify-content-between">
-                            <button type="button" className="btn btn-dark btn-sm" onClick={play}>
-                                <PlayIcon />
-                            </button>
-                            <button type="button" className="btn btn-dark btn-sm" onClick={pause}>
-                                <PauseIcon />
-                            </button>
-                            <button type="button" className="btn btn-dark btn-sm" onClick={reset}>
-                                <RepeatIcon />
-                            </button>
+                        <div className="d-flex justify-content-center">
+                            <div className="d-flex smallSize justify-content-between">
+                                <button type="button" className="btn btn-dark btn-sm" onClick={play}>
+                                    <PlayIcon />
+                                </button>
+                                <button type="button" className="btn btn-dark btn-sm" onClick={pause}>
+                                    <PauseIcon />
+                                </button>
+                                <button type="button" className="btn btn-dark btn-sm" onClick={reset}>
+                                    <RepeatIcon />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

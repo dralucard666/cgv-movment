@@ -64,6 +64,29 @@ export function simpleExecution<T>(
         )
 }
 
+export function simpleSceneExecution<T>(
+    execute: (
+        variables: {
+            [x: string]: Observable<any>
+        },
+        ...parameters: ReadonlyArray<T>
+    ) => Observable<Array<T>>
+): (parameters: Value<ReadonlyArray<T>>) => Observable<Array<Value<T>>> {
+    return (parameters) =>
+        execute(parameters.variables, ...parameters.raw).pipe(
+            map((results) =>
+                results.length === 1
+                    ? [
+                          {
+                              ...parameters,
+                              raw: results[0],
+                          },
+                      ]
+                    : results.map((result, i) => ({ ...parameters, raw: result, index: [...parameters.index, i] }))
+            )
+        )
+}
+
 export type Operations<T> = {
     [Name in string]: Operation<T>
 }
@@ -252,6 +275,7 @@ function interpreteOperation<T, I>(
     context: InterpretionContext<T, I>,
     next: MonoTypeOperatorFunction<Value<T>>
 ): MonoTypeOperatorFunction<Value<T>> {
+    step.identifier
     const parameters = step.children
     const operation = context.operations[step.identifier]
     if (operation == null) {

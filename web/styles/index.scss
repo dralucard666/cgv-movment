@@ -233,3 +233,13 @@ div.table-scroll {
     left: 40%;
     z-index: 10001;
 }
+
+.smallSize {
+    width: 75%;
+}
+
+@media (min-width: 900px) {
+    .smallSize {
+        width: 100%;
+    }
+}

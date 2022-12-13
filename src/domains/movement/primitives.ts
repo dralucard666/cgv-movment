@@ -21,17 +21,15 @@ export interface ObjectPosition {
 
 export class Primitive {
     constructor(
-        public staticObjects: Object3D[],
         public startPosition: Vector3,
         public grammarSteps: AbstractParsedSteps<HierarchicalInfo>[],
-        public totalWorld: Object3D[]
+        public totalWorld: Scene
     ) {}
 
     createMovementObject(time: number, direction: Vector3, type: ObjectType) {
         return new MovingObject(
             [{ position: this.startPosition, time, direction } as ObjectPosition],
             type,
-            this.staticObjects,
             [...this.grammarSteps],
             this.totalWorld
         )
@@ -42,18 +40,10 @@ export class MovingObject extends Primitive {
     constructor(
         public position: ObjectPosition[],
         public type: ObjectType,
-        public staticObjects: Object3D[],
         public grammarSteps: AbstractParsedSteps<HierarchicalInfo>[],
-        public totalWorld: Object3D[]
+        public totalWorld: Scene
     ) {
-        super(staticObjects, position[0].position, grammarSteps, totalWorld)
-
-        /*         console.log(staticObjects)
-        console.log(this.totalWorld)
-        if (this.totalWorld.length > 0) {
-            this.staticObjects.map((v) => this.totalWorld[0].add(v))
-        }
-        console.log(this.totalWorld) */
+        super(position[0].position, grammarSteps, totalWorld)
     }
 
     moveRight(distance: number) {
@@ -65,7 +55,7 @@ export class MovingObject extends Primitive {
 
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ ...newPo, direction: new Vector3(1, 0, 0) })
-        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
     moveLeft(distance: number) {
@@ -77,7 +67,7 @@ export class MovingObject extends Primitive {
 
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ ...newPo, direction: new Vector3(-1, 0, 0) })
-        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
     moveUp(distance: number) {
@@ -89,7 +79,7 @@ export class MovingObject extends Primitive {
 
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ ...newPo, direction: new Vector3(0, 0, 1) })
-        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
     moveDown(distance: number) {
@@ -101,14 +91,14 @@ export class MovingObject extends Primitive {
 
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ ...newPo, direction: new Vector3(0, 0, -1) })
-        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
     moveUpAvoid(distance: number) {
         const currentPo = this.position[this.position.length - 1]
         const raycaster = new Raycaster(currentPo.position, new Vector3(0, 0, 1), undefined, distance)
-        if (this.totalWorld.length > 0) {
-            const world = this.totalWorld[0]!
+        if (this.totalWorld) {
+            const world = this.totalWorld
             const intersectedObjects = raycaster.intersectObjects([world], true)
             if (intersectedObjects.length == 0) {
                 return this.moveUp(distance)
@@ -121,8 +111,8 @@ export class MovingObject extends Primitive {
     moveDownAvoid(distance: number) {
         const currentPo = this.position[this.position.length - 1]
         const raycaster = new Raycaster(currentPo.position, new Vector3(0, 0, -1), undefined, distance)
-        if (this.totalWorld.length > 0) {
-            const world = this.totalWorld[0]!
+        if (this.totalWorld) {
+            const world = this.totalWorld
             const intersectedObjects = raycaster.intersectObjects([world], true)
             if (intersectedObjects.length == 0) {
                 return this.moveDown(distance)
@@ -135,8 +125,8 @@ export class MovingObject extends Primitive {
     moveLeftAvoid(distance: number) {
         const currentPo = this.position[this.position.length - 1]
         const raycaster = new Raycaster(currentPo.position, new Vector3(-1, 0, 0), undefined, distance)
-        if (this.totalWorld.length > 0) {
-            const world = this.totalWorld[0]!
+        if (this.totalWorld) {
+            const world = this.totalWorld
             const intersectedObjects = raycaster.intersectObjects([world], true)
             if (intersectedObjects.length == 0) {
                 return this.moveLeft(distance)
@@ -149,8 +139,8 @@ export class MovingObject extends Primitive {
     moveRightAvoid(distance: number) {
         const currentPo = this.position[this.position.length - 1]
         const raycaster = new Raycaster(currentPo.position, new Vector3(1, 0, 0), undefined, distance)
-        if (this.totalWorld.length > 0) {
-            const world = this.totalWorld[0]!
+        if (this.totalWorld) {
+            const world = this.totalWorld
             const intersectedObjects = raycaster.intersectObjects([world], true)
             if (intersectedObjects.length == 0) {
                 return this.moveRight(distance)
@@ -170,12 +160,12 @@ export class MovingObject extends Primitive {
         } as ObjectPosition
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ ...newPo, direction: newDirection.normalize() })
-        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
     moveRotateTurnClock(angle: possibleAngles, distance: possibleDistance) {
-        if (this.totalWorld.length > 0) {
-            const world = this.totalWorld[0]!
+        if (this.totalWorld) {
+            const world = this.totalWorld
             const currentPo = this.position[this.position.length - 1].position.clone()
             const direction = this.position[this.position.length - 1].direction.clone().normalize()
             const positionBehind = currentPo
@@ -201,7 +191,7 @@ export class MovingObject extends Primitive {
         const oldTime = oldPo.time
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ position: oldPo.position, direction: oldPo.direction, time: oldTime + standardSteps })
-        return new MovingObject(newPosArray, this.type, this.staticObjects, [...this.grammarSteps], this.totalWorld)
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
     staticObjectAhead() {

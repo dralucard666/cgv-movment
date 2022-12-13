@@ -88,7 +88,11 @@ export function GUI({ className, ...rest }: HTMLProps<HTMLDivElement>) {
     }
     return (
         <div {...rest} className={`${className} d-flex flex-column px-0 pt-3`}>
-            <div className="d-flex flex-column overflow-hidden">
+            <div
+                className="d-flex flex-column"
+                style={{
+                    overflow: "auto",
+                }}>
                 <div
                     style={{
                         whiteSpace: "pre",

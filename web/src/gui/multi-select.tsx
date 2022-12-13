@@ -30,9 +30,7 @@ export function MultiSelect<T>({
             {values.length > 0 && (
                 <div
                     style={{ width: rect?.width, top: (rect?.top ?? 0) + (rect?.height ?? 0), bottom: "4rem" }}
-                    className={`d-flex flex-column overflow-hidden position-absolute ${
-                        show ? "" : "visually-hidden"
-                    }`}>
+                    className={`d-flex flex-column overflow-hidden position-absolute ${show ? "" : "visually-hidden"}`}>
                     <div className="overflow-hidden d-flex flex-column w-100 pt-2 bg-light rounded border">
                         <div className="btn-group w-100 px-2 mb-2">
                             <button className="btn btn-sm btn-outline-secondary" onClick={selectAll}>
@@ -42,9 +40,9 @@ export function MultiSelect<T>({
                                 Unselect All
                             </button>
                         </div>
-                        <div className="d-flex flex-column scroll">
+                        <div className="d-flex flex-column scroll" style={{ overflow: "auto" }}>
                             {values.map(([label, selected, value], i) => (
-                                <div key={label} className="mx-3 mb-2">
+                                <div key={label} className="mx-3 mb-2 scroll">
                                     <EndLabel value={label}>
                                         <input
                                             onChange={(e) => onChange(value, e.target.checked, i)}

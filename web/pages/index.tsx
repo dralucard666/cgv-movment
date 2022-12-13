@@ -40,6 +40,7 @@ import { useRouter } from "next/router"
 import { standardTime } from "cgv/domains/movement"
 import { dataWorldState, WorldState } from "../src/domains/movement/movementData"
 import { TimeEditToggle } from "../src/domains/movement/TimeEdit/TimeEditToggle"
+import { operationGuiMap } from "../src/domains/movement/gui"
 
 const zoom = 18
 const globalLocalRatio = tileZoomRatio(0, zoom)
@@ -64,7 +65,7 @@ export default function Movement() {
                     idPatternType,
                 ])}
                 Viewer={Viewer}
-                operationGuiMap={{}}
+                operationGuiMap={operationGuiMap}
                 operations={operations}>
                 {/*  <Editor /> */}
                 <Editor />
@@ -103,7 +104,6 @@ const selectWorld = (
     store: UseBaseStore,
     resetMovementData: any
 ) => {
-    console.log(newVal)
     const selectedWorld = dataWorldState[newVal]
     setDataOptions(selectedWorld.data ?? null)
     setWorldName(newVal)

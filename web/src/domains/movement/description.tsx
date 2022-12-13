@@ -18,7 +18,7 @@ import {
 } from "cgv"
 import { RefObject, ReactNode, useEffect, useRef } from "react"
 import { of, Subscription, Subject, map } from "rxjs"
-import { Color, Group, Matrix4, Mesh, MeshBasicMaterial, Object3D, SphereBufferGeometry, Vector3 } from "three"
+import { Color, Group, Matrix4, Mesh, MeshBasicMaterial, Object3D, Scene, SphereBufferGeometry, Vector3 } from "three"
 import { UseBaseStore, useBaseStore, useBaseStoreState } from "../../global"
 import { childrenSelectable } from "../../gui"
 import { useViewerState } from "../shape/viewer/state"
@@ -50,7 +50,7 @@ function pathStartsWith(p1: HierarchicalPath, p2: HierarchicalPath): boolean {
     return true
 }
 
-const defaultValue = new Primitive([], new Vector3(0, 0, 0), [], [])
+const defaultValue = new Primitive(new Vector3(0, 0, 0), [], new Scene())
 
 export function Descriptions() {
     const descriptions = useBaseStoreState((state) => state.descriptions, shallowEqual)
@@ -116,17 +116,12 @@ function useSimpleInterpretation(
                     useMovementStore.getState().setTreePath(oldTreePath)
                     return v
                 }),
-                toValue(),
+                toValue(undefined, undefined, { environment: of(ref.current!.parent!), seed: of(seed) }),
                 interprete<Primitive, HierarchicalInfo>(description, operations, {
                     delay: store.getState().interpretationDelay,
                     seed,
                     listeners: {
                         onAfterStep: (step, value) => {
-                            if (value.raw.totalWorld) {
-                                const world = ref.current!.parent!
-                                world.updateMatrixWorld()
-                                value.raw.totalWorld = [world]
-                            }
                             if (step.type === "operation") {
                                 const identifier = step.identifier
                                 if (
@@ -214,18 +209,13 @@ function useInterpretation(
                         useMovementStore.getState().setTreePath(oldTreePath)
                         return v
                     }),
-                    toValue(),
+                    toValue(undefined, undefined, { environment: of(ref.current!.parent!), seed: of(seed) }),
                     interprete<Primitive, HierarchicalInfo>(description, operations, {
                         delay: store.getState().interpretationDelay,
                         seed,
                         //TODO: we need a possibility to know when a value is removed
                         listeners: {
                             onAfterStep: (step, value) => {
-                                if (value.raw.totalWorld) {
-                                    const world = ref.current!.parent!
-                                    world.updateMatrixWorld()
-                                    value.raw.totalWorld = [world]
-                                }
                                 const beforeValues = beforeValuesMap.get(step)
                                 const beforeValue = beforeValues?.find((possibleBeforeValue) => {
                                     const relation = getIndexRelation(value.index, possibleBeforeValue.index)

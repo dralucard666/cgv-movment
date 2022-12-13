@@ -45,7 +45,7 @@ export function DescriptionList({
                     </button>
                 </Tooltip>
             </div>
-            <div className="d-flex flex-column scroll">
+            <div className="d-flex flex-column scroll" style={{ overflow: "auto" }}>
                 {descriptions.map(({ name, seed }, i) => (
                     <div
                         onClick={(e) => store.getState().selectDescription(name, store.getState().shift ?? false)}
