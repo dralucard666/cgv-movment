@@ -78,7 +78,7 @@ export default function Slider(props: any) {
                         height: "5%",
                         color: "#040720",
                     }}>
-                    <h4>Time : {time}</h4>
+                    <h4>Frame : {time}</h4>
                     {searchCanvasPos ? (
                         <Canvas
                             style={{

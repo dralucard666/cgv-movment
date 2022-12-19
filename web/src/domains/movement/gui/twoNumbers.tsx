@@ -12,7 +12,7 @@ export function GUITwoNumbers({ value }: { value: AbstractParsedOperation<Hierar
 
     return (
         <div className="d-flex flex-column mx-3">
-            <StartLabel value="Distance" className="mb-3 ">
+            <StartLabel value="Direction Angle" className="mb-3 ">
                 <input
                     value={angle}
                     type="number"
@@ -21,10 +21,10 @@ export function GUITwoNumbers({ value }: { value: AbstractParsedOperation<Hierar
                             draft.children[0] = { type: "raw", value: +e.currentTarget.value }
                         }, value)
                     }
-                    className="flex-grow-1 form-select form-select-sm"
+                    className="flex-grow-1 me-2 flex-basis-0 form-control form-control-sm"
                 />
             </StartLabel>
-            <StartLabel value="Direction Angle" className="mb-3 ">
+            <StartLabel value="Distance" className="mb-3 ">
                 <input
                     value={distance}
                     type="number"
@@ -33,7 +33,7 @@ export function GUITwoNumbers({ value }: { value: AbstractParsedOperation<Hierar
                             draft.children[1] = { type: "raw", value: +e.currentTarget.value }
                         }, value)
                     }
-                    className="flex-grow-1 form-select form-select-sm"
+                    className="flex-grow-1 me-2 flex-basis-0 form-control form-control-sm"
                 />
             </StartLabel>
         </div>

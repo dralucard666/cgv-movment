@@ -60,7 +60,7 @@ export function GUICreateObject({ value }: { value: AbstractParsedOperation<Hier
                         <BlurInput
                             value={z ?? defaultValue}
                             type="number"
-                            className="flex-grow-1 flex-basis-0 form-control form-control-sm"
+                            className="flex-grow-1 me-2 flex-basis-0 form-control form-control-sm"
                             onChangeCapture={(e) => update(2, e.currentTarget.valueAsNumber)}
                         />
                     </div>

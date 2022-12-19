@@ -21,13 +21,20 @@ export function DescriptionList({
             {...rest}
             style={style}
             className={`${className} bg-light rounded shadow w-100 overflow-hidden border d-flex flex-column`}>
-            <div className="p-2 border-top border-1">
-                <button onClick={() => store.getState().toggleDomain()} className={`btn text-primary btn-sm`}>
-                    {store.getState().domain}
-                </button>
-            </div>
+                <ul className="nav nav-tabs m-2 mb-3" style={{ fontSize: 15 }}>
+                    <button
+                        className={store.getState().domain === "movement" ? `nav-link active` : `nav-link`}
+                        onClick={() => store.getState().toggleDomain()}>
+                        Movement
+                    </button>
+                    <button
+                        className={store.getState().domain === "static" ? `nav-link active` : `nav-link`}
+                        onClick={() => store.getState().toggleDomain()}>
+                        Static
+                    </button>
+                </ul>
             <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
-                <span>Descriptions</span>
+                <span>{store.getState().domain === "movement" ? "Movement" : "Static"} Descriptions</span>
                 <div className="flex-grow-1" />
                 <Tooltip align={{ offset: [0, 8] }} placement="top" overlay="Add Description">
                     <button

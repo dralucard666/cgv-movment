@@ -73,24 +73,24 @@ export class MovingObject extends Primitive {
     moveUp(distance: number) {
         const oldPo = this.position[this.position.length - 1]
         const newPo = {
-            position: oldPo.position.clone().setZ(oldPo.position.z + distance),
-            time: oldPo.time + standardSteps,
-        } as ObjectPosition
-
-        const newPosArray = structuredClone(this.position)
-        newPosArray.push({ ...newPo, direction: new Vector3(0, 0, 1) })
-        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
-    }
-
-    moveDown(distance: number) {
-        const oldPo = this.position[this.position.length - 1]
-        const newPo = {
             position: oldPo.position.clone().setZ(oldPo.position.z - distance),
             time: oldPo.time + standardSteps,
         } as ObjectPosition
 
         const newPosArray = structuredClone(this.position)
         newPosArray.push({ ...newPo, direction: new Vector3(0, 0, -1) })
+        return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
+    }
+
+    moveDown(distance: number) {
+        const oldPo = this.position[this.position.length - 1]
+        const newPo = {
+            position: oldPo.position.clone().setZ(oldPo.position.z + distance),
+            time: oldPo.time + standardSteps,
+        } as ObjectPosition
+
+        const newPosArray = structuredClone(this.position)
+        newPosArray.push({ ...newPo, direction: new Vector3(0, 0, 1) })
         return new MovingObject(newPosArray, this.type, [...this.grammarSteps], this.totalWorld)
     }
 
@@ -153,7 +153,7 @@ export class MovingObject extends Primitive {
     moveRotate(angle: possibleAngles, distance: possibleDistance) {
         const oldPo = this.position[this.position.length - 1]
         const direction = oldPo.direction.clone()
-        const newDirection = direction.applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+        const newDirection = direction.applyAxisAngle(new Vector3(0, 1, 0), (angle / 180) * Math.PI)
         const newPo = {
             position: oldPo.position.clone().add(newDirection.multiplyScalar(distance)),
             time: oldPo.time + standardSteps,
@@ -172,7 +172,7 @@ export class MovingObject extends Primitive {
 
             for (let i = 0; i < 12; i++) {
                 const newAngle = angle + i * 30
-                const newDirection = direction.clone().applyAxisAngle(new Vector3(0, 1, 0), (-newAngle / 180) * Math.PI)
+                const newDirection = direction.clone().applyAxisAngle(new Vector3(0, 1, 0), (newAngle / 180) * Math.PI)
                 const raycaster = new Raycaster(positionBehind, newDirection, undefined, distance)
 
                 const intersectedObjects = raycaster.intersectObjects([world], true)

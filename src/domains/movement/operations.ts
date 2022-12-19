@@ -58,7 +58,7 @@ function createObject(
 ): Observable<Array<MovingObject>> {
     const seed$ = variables.seed
     const environment$ = variables.environment
-    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (angle / 180) * Math.PI)
     return combineLatest([seed$, environment$]).pipe(
         switchMap(([s, e]) => of([new MovingObject([{ position, time, direction } as ObjectPosition], type, [], e)]))
     )
@@ -74,7 +74,7 @@ function createPedestrian(
 ): Observable<Array<MovingObject>> {
     const seed$ = variables.seed
     const environment$ = variables.environment
-    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (angle / 180) * Math.PI)
     return combineLatest([seed$, environment$]).pipe(
         switchMap(([s, e]) =>
             of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Pedestrian, [], e)])
@@ -88,11 +88,11 @@ function createCyclist(
     },
     position: Vector3,
     time: number,
-    angle: Vector3
+    angle: number
 ): Observable<Array<MovingObject>> {
     const seed$ = variables.seed
     const environment$ = variables.environment
-    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (angle / 180) * Math.PI)
     return combineLatest([seed$, environment$]).pipe(
         switchMap(([s, e]) =>
             of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Cyclist, [], e)])
@@ -110,7 +110,7 @@ function createCar(
 ): Observable<Array<MovingObject>> {
     const seed$ = variables.seed
     const environment$ = variables.environment
-    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (-angle / 180) * Math.PI)
+    const direction = new Vector3(1, 0, 0).applyAxisAngle(new Vector3(0, 1, 0), (angle / 180) * Math.PI)
     return combineLatest([seed$, environment$]).pipe(
         switchMap(([s, e]) =>
             of([new MovingObject([{ position, time, direction } as ObjectPosition], ObjectType.Car, [], e)])
@@ -179,7 +179,7 @@ function computeSample(
 }
 
 function addRectangle(position: Vector3, sideLength: number): Observable<Array<Object3D>> {
-    const material = new MeshBasicMaterial({ color: 0x00ff00 })
+    const material = new MeshBasicMaterial({ color: 0x808080 })
     const geometry = new BoxGeometry(sideLength, sideLength, sideLength)
     const mesh = new Mesh(geometry, material)
     mesh.position.set(...position.toArray())

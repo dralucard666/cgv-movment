@@ -227,15 +227,15 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                         top: 0,
                         bottom: 0,
                     }}>
-                    <div className="d-flex flex-column my-3 ms-3" style={{ maxWidth: 200 }}>
+                    <div className="d-flex flex-column my-3 ms-3" style={{ maxWidth: 200, minHeight: 600 }}>
                         <DescriptionList
                             createDescriptionRequestData={() => ({})}
                             style={{ pointerEvents: "all" }}
                             className="mb-3">
-                            <div className="p-2 border-top border-1">
+                             <div className="p-2 border-top border-1">
                                 <SummarizeButton />
                             </div>
-                            <div className="w-100 mt-2">Select World</div>
+      {/*                      <div className="w-100 m-2">Select World</div>
                             <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
                                 <select
                                     value={worldName}
@@ -286,7 +286,7 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                                         </select>
                                     </div>
                                 </>
-                            ) : null}
+                            ) : null} */}
                         </DescriptionList>
                         <div className="flex-grow-1" />
                         <div style={{ pointerEvents: "all" }} className="d-flex flex-row">
