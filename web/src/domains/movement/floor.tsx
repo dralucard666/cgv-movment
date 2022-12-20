@@ -34,8 +34,3 @@ export default function Floor(props: { world: WorldState }) {
 }
 
 useGLTF.preload("./models/bookstore.glb")
-useGLTF.preload("./models/eth.glb")
-useGLTF.preload("./models/zara.glb")
-useGLTF.preload("./models/students.glb")
-useGLTF.preload("./models/hotel.glb")
-useGLTF.preload("./models/little.glb")
