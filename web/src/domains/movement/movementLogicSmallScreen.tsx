@@ -50,13 +50,23 @@ export default function MovementLogicSmallScreen(props: {
         if (data) {
             const position = data.position as number[]
             const direction = data.direction as number[]
-            object.current.updatePosition(
-                position[0],
-                position[1],
-                position[2],
-                -Math.atan2(direction[2], direction[0]) + Math.PI / 2,
-                Math.round(Math.random() * 500)
-            )
+            if (type===ObjectType.Car) {
+                object.current.updatePosition(
+                    position[0],
+                    position[1],
+                    position[2],
+                    -Math.atan2(direction[2], direction[0]) + Math.PI,
+                    Math.round(Math.random() * 500)
+                )
+            } else {
+                object.current.updatePosition(
+                    position[0],
+                    position[1],
+                    position[2],
+                    -Math.atan2(direction[2], direction[0]) + Math.PI / 2,
+                    Math.round(Math.random() * 500)
+                )
+            }
         }
     }, [object, props])
 
