@@ -120,10 +120,10 @@ const EditTools = () => {
                 <span style={{ width: "60px" }}></span>
                 <button
                     type="button"
-                    style={{ width: "110px", height: "30px" }}
+                    style={{ width: "150px", height: "30px" }}
                     onClick={closeRows}
                     className="ml-5 btn btn-warning btn-sm">
-                    toggle rows
+                    open/close rows
                 </button>
             </div>
         </div>
