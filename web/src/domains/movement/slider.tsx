@@ -1,11 +1,10 @@
 import Sllider from "@mui/material/Slider"
-import { Canvas, extend, useFrame, useThree } from "@react-three/fiber"
-import { shallowEqual } from "cgv"
+import { Canvas, useThree } from "@react-three/fiber"
 import React, { useState, useEffect } from "react"
+import { useBaseStoreState } from "../../global"
 import { PauseIcon } from "../../icons/pause"
 import { PlayIcon } from "../../icons/play"
 import { RepeatIcon } from "../../icons/repeat"
-import { CameraController } from "./camera"
 import Floor from "./floor"
 import MovementLogicSmallScreen from "./movementLogicSmallScreen"
 import { useMovementStore } from "./useMovementStore"
@@ -32,6 +31,7 @@ export default function Slider(props: any) {
     const visible = !!data && max != 0
     const [searchCanvasPos, setSearchCanvasPos] = useState<number | false>(false)
     const [smallScreenTime, setSmallScreenTime] = useState<number>(0)
+    const videoEditorOpen = useBaseStoreState((e) => e.showTe)
 
     const handleChange = (event: any, newValue: any) => {
         useMovementStore.getState().setPlayActive(true)
@@ -42,6 +42,9 @@ export default function Slider(props: any) {
 
     const play = () => {
         useMovementStore.getState().setPlayActive(true)
+        if (time == max - 1) {
+            setTime(min)
+        }
     }
 
     const pause = () => {
@@ -121,7 +124,8 @@ export default function Slider(props: any) {
                             valueLabelDisplay="auto"
                         />
                         <div className="d-flex justify-content-center">
-                            <div className="d-flex smallSize justify-content-between">
+                            <div
+                                className={`d-flex smallSize justify-content-between ${videoEditorOpen ? "w-50" : ""}`}>
                                 <button type="button" className="btn btn-dark btn-sm" onClick={play}>
                                     <PlayIcon />
                                 </button>
