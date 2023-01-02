@@ -6,7 +6,7 @@ import { Point3Control } from "../control/point"
 import { GUIPoint3Step } from "./point"
 import { GUIVector3 } from "./vector"
 
-export function GUIRectangle({ value }: { value: AbstractParsedOperation<HierarchicalInfo> }) {
+export function GuiCube({ value }: { value: AbstractParsedOperation<HierarchicalInfo> }) {
     const store = useBaseStore()
     const lengthValue = value.children[1].type === "raw" ? value.children[1].value : undefined
     const defaultValue = 0

@@ -178,7 +178,7 @@ function computeSample(
     )
 }
 
-function addRectangle(position: Vector3, sideLength: number): Observable<Array<Object3D>> {
+function addCubengle(position: Vector3, sideLength: number): Observable<Array<Object3D>> {
     const material = new MeshBasicMaterial({ color: 0x808080 })
     const geometry = new BoxGeometry(sideLength, sideLength, sideLength)
     const mesh = new Mesh(geometry, material)
@@ -359,8 +359,8 @@ export const operations: Operations<any> = {
         includeThis: false,
         defaultParameters: [() => ({ type: "raw", value: 10 })],
     },
-    rectangle: {
-        execute: simpleExecution<any>(addRectangle),
+    cube: {
+        execute: simpleExecution<any>(addCubengle),
         includeThis: false,
         defaultParameters: [
             () => ({

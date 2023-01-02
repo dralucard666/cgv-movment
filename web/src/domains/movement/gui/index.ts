@@ -2,7 +2,7 @@ import { OperationGUIMap } from "../../../gui"
 import { GUICreateFromPrimitive } from "./createFromPrimitive"
 import { GUICreateObject } from "./createObject"
 import { ObjectTypeInput } from "./objectTypeInput"
-import { GUIRectangle } from "./reactangle"
+import { GuiCube } from "./reactangle"
 import { GUITwoNumbers } from "./twoNumbers"
 import { GUITypedObject } from "./typedObject"
 
