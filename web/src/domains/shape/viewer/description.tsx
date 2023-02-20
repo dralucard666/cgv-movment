@@ -58,7 +58,7 @@ export function Descriptions({ x, y }: { x: number; y: number }) {
     const descriptions = useBaseStoreState(
         (state) =>
             state.descriptions.filter(
-                (description) => description.name.endsWith(suffix) && description.domain === state.domain
+                (description) => description.name.endsWith(suffix)
             ),
         shallowEqual
     )

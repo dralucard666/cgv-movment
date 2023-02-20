@@ -54,16 +54,13 @@ import { Draft, freeze } from "immer"
 import { Matrix4, Color } from "three"
 import create, { GetState, SetState } from "zustand"
 import { combine, subscribeWithSelector } from "zustand/middleware"
-import { useMovementStore } from "./domains/movement/useMovementStore"
 import { UseBaseStore } from "./global"
 
 export type BaseState = (CombineEmpty<GuiState, TuiState> | CombineEmpty<TuiState, GuiState>) & {
     interpretationDelay: number
-    descriptions: Array<{ seed: number; name: string; domain: string }>
+    descriptions: Array<{ seed: number; name: string }>
     selectedDescriptions: Array<string>
     showTui: boolean
-    showTe: boolean
-    domain: string
 }
 
 export type CombineEmpty<T, K> = T & {
@@ -125,9 +122,7 @@ function createBaseStateInitial(): BaseState {
         requested: undefined,
         shift: false,
         showTui: false,
-        showTe: false,
         graphVisualization: false,
-        domain: "movement",
     }
 }
 
@@ -174,7 +169,6 @@ function createBaseStateFunctions(
                     descriptions: Array.from(descriptionSet).map((name) => ({
                         name,
                         seed: 0,
-                        domain: get().domain,
                     })),
                     grammar: parsedDescription,
                     selectedDescriptions: [],
@@ -201,9 +195,6 @@ function createBaseStateFunctions(
         },
         setShowTui: (showTui: boolean) => {
             set({ showTui })
-        },
-        setShowTe: (showTe: boolean) => {
-            set({ showTe })
         },
         selectDescription: (name: string, shift: boolean) => {
             const state = get()
@@ -315,7 +306,6 @@ function createBaseStateFunctions(
         },
         addDescriptions: (newDescriptions: Array<{ name: string; step?: ParsedSteps }>) => {
             let { descriptions, grammar, dependencyMap } = get()
-            const { domain } = get()
             for (const newDescription of newDescriptions) {
                 if (descriptions.findIndex((description) => description.name === newDescription.name) !== -1) {
                     continue
@@ -328,7 +318,7 @@ function createBaseStateFunctions(
                         )
                     )
                 }
-                descriptions = [{ name: newDescription.name, seed: 0, domain }].concat(descriptions)
+                descriptions = [{ name: newDescription.name, seed: 0 }].concat(descriptions)
             }
             dependencyMap = computeDependencies(grammar)
             set({
@@ -338,34 +328,16 @@ function createBaseStateFunctions(
             })
         },
         deleteDescription: (name: string) => {
-            const idName = "ID" + name
             const { descriptions, selectedDescriptions, grammar, selectionsList } = get()
-            const newDescriptions = descriptions.filter(
-                (description) => description.name != name && description.name !== idName
-            )
-            const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
-                const nodeName = v.data.key.replace("Start@", "").split("_")[0]
-                return !(nodeName === name)
-            })
-            useMovementStore.getState().setTreePath(oldTreePath)
+            const newDescriptions = descriptions.filter((description) => description.name != name)
             set({
                 descriptions: newDescriptions,
-                selectedDescriptions: selectedDescriptions.filter(
-                    (descriptionName) => descriptionName !== name && descriptionName !== idName
-                ),
+                selectedDescriptions: selectedDescriptions.filter((descriptionName) => descriptionName !== name),
                 ...removeUnusedNouns(
                     grammar,
                     selectionsList ?? [],
                     newDescriptions.map(({ name }) => name)
                 ),
-            })
-        },
-        deleteAllDescription: () => {
-            const { grammar, selectionsList } = get()
-            set({
-                descriptions: [],
-                selectedDescriptions: [],
-                ...removeUnusedNouns(grammar, selectionsList ?? [], []),
             })
         },
         concretizeDescription: async (name: string, seed: number) => {
@@ -398,9 +370,7 @@ function createBaseStateFunctions(
         setSeed: (name: string, seed: number) => {
             set({
                 descriptions: get().descriptions.map((description) =>
-                    description.name === name
-                        ? { name: description.name, seed, domain: description.domain }
-                        : description
+                    description.name === name ? { name: description.name, seed } : description
                 ),
             })
         },
@@ -480,20 +450,6 @@ function createBaseStateFunctions(
                     values,
                 },
             })
-        },
-        toggleDomain: () => {
-            const state = get()
-            if (state.domain === "movement") {
-                set({
-                    ...state,
-                    domain: "static",
-                })
-            } else {
-                set({
-                    ...state,
-                    domain: "movement",
-                })
-            }
         },
         onEndHover: (steps: SelectedSteps | string) => {
             const state = get()
@@ -661,11 +617,7 @@ function createBaseStateFunctions(
                 partial = {
                     descriptions: state.descriptions.map((description) =>
                         state.selectedDescriptions.includes(description.name)
-                            ? {
-                                  name: description.name,
-                                  seed: Math.random() * Number.MAX_SAFE_INTEGER,
-                                  domain: description.domain,
-                              }
+                            ? { name: description.name, seed: Math.random() * Number.MAX_SAFE_INTEGER }
                             : description
                     ),
                     ...partial,
@@ -763,11 +715,7 @@ function createBaseStateFunctions(
                 partial = {
                     descriptions: state.descriptions.map((description) =>
                         state.selectedDescriptions.includes(description.name)
-                            ? {
-                                  name: description.name,
-                                  seed: Math.random() * Number.MAX_SAFE_INTEGER,
-                                  domain: description.domain,
-                              }
+                            ? { name: description.name, seed: Math.random() * Number.MAX_SAFE_INTEGER }
                             : description
                     ),
                     ...partial,

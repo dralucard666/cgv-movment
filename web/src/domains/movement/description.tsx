@@ -25,10 +25,6 @@ import { useViewerState } from "../shape/viewer/state"
 import { operations } from "cgv/domains/movement/operations"
 import { ObjectPosition, ObjectType, Primitive, MovingObject } from "cgv/domains/movement/primitives"
 import { applyToObject3D } from "./apply-to-object"
-import { useMovementStore } from "./useMovementStore"
-import { Vector } from "three-csg-ts/lib/esm/Vector"
-import { useTimeEditStore } from "./TimeEdit/useTimeEditStore"
-import { Control } from "./control"
 /**
  *
  * @param p1
@@ -65,7 +61,6 @@ export function Descriptions() {
 
 export function Description({ seed, name, index }: { seed: number; name: string; index: number }) {
     const store = useBaseStore()
-    const domain = useBaseStoreState((state) => state.domain)
     const isSelected = store((state) => state.selectedDescriptions.includes(name))
     const rootNode = store(
         (state) => state.grammar.find(({ name: nounName }) => isNounOfDescription(name, nounName))?.name
@@ -73,9 +68,8 @@ export function Description({ seed, name, index }: { seed: number; name: string;
     if (rootNode == null) {
         return null
     }
-    return isSelected || domain === "movement" ? (
+    return isSelected? (
         <>
-            {<Control description={name} />}
             {/*<DescriptionOutline rootNode={rootNode} />*/}
             <SelectedDescription seed={seed} name={name} />
             <HighlightDescription description={name} />
@@ -95,59 +89,18 @@ function useSimpleInterpretation(
     const store = useBaseStore()
     const name = description ? (description[0].name ? description[0].name : "") : ("" as unknown as string)
     const newdefaultValue = defaultValue
-    const world = useMovementStore((e) => e.world)
-    const setLoadingState = useMovementStore((e) => e.setLoadingState)
 
-    const descriptionKnown = useMovementStore.getState().treePath.some((v) => {
-        const nodeName = v.data.key.replace("Start@", "").split("_")[0]
-        return nodeName === name.replace("Start@", "")
-    })
     useEffect(() => {
-        if (ref.current == null || description == null || descriptionKnown) {
+        if (ref.current == null || description == null) {
             return
         }
         const subscription = applyToObject3D(
             of(newdefaultValue).pipe(
-                map((v) => {
-                    const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
-                        const nodeName = v.data.key.replace("Start@", "").split("_")[0]
-                        return !(nodeName === name.replace("Start@", ""))
-                    })
-                    useMovementStore.getState().setTreePath(oldTreePath)
-                    return v
-                }),
                 toValue(undefined, undefined, { environment: of(ref.current!.parent!), seed: of(seed) }),
                 interprete<Primitive, HierarchicalInfo>(description, operations, {
                     delay: store.getState().interpretationDelay,
                     seed,
-                    listeners: {
-                        onAfterStep: (step, value) => {
-                            if (step.type === "operation") {
-                                const identifier = step.identifier
-                                if (
-                                    identifier === "createOb" ||
-                                    identifier === "pedestrian" ||
-                                    identifier === "cyclist" ||
-                                    identifier === "car" ||
-                                    identifier === "createFromPrimitive" ||
-                                    identifier === "moveRight" ||
-                                    identifier === "moveLeft" ||
-                                    identifier === "moveUp" ||
-                                    identifier === "moveDown" ||
-                                    identifier === "moveRotate" ||
-                                    identifier === "standStill" ||
-                                    identifier === "sample" ||
-                                    identifier === "moveUpAvoid" ||
-                                    identifier === "moveDownAvoid" ||
-                                    identifier === "moveRightAvoid" ||
-                                    identifier === "moveLeftAvoid" ||
-                                    identifier === "moveRotateAvoid"
-                                ) {
-                                    value.raw.grammarSteps.push(step)
-                                }
-                            }
-                        },
-                    },
+                    listeners: {                    },
                 })
             ),
             name,
@@ -159,14 +112,13 @@ function useSimpleInterpretation(
             (error: any) => {
                 console.error(error)
                 useViewerState.getState().setError(error.message)
-            },
-            setLoadingState
+            }
         )
         return () => {
             ref.current?.remove(...ref.current.children)
             subscription.unsubscribe()
         }
-    }, [store, description, seed, world])
+    }, [store, description, seed])
 }
 
 function useInterpretation(
@@ -176,16 +128,11 @@ function useInterpretation(
     ref: RefObject<ReactNode & Object3D>
 ) {
     const store = useBaseStore()
-    const movementStore = useMovementStore()
-    const world = useMovementStore((e) => e.world)
-    const setLoadingState = useMovementStore((e) => e.setLoadingState)
 
     useEffect(() => {
         if (ref.current == null || description == null) {
             return
         }
-        movementStore.setData(null)
-        useTimeEditStore.getState().treePath = []
         let subscription: Subscription | undefined
 
         const beforeValuesMap = new Map<ParsedSteps, Array<Value<Primitive>>>()
@@ -201,15 +148,8 @@ function useInterpretation(
         try {
             subscription = applyToObject3D(
                 of(newdefaultValue).pipe(
-                    map((v) => {
-                        const oldTreePath = useMovementStore.getState().treePath.filter((v) => {
-                            const nodeName = v.data.key.replace("Start@", "").split("_")[0]
-                            return !(nodeName === name.replace("Start@", ""))
-                        })
-                        useMovementStore.getState().setTreePath(oldTreePath)
-                        return v
-                    }),
                     toValue(undefined, undefined, { environment: of(ref.current!.parent!), seed: of(seed) }),
+                    map(v=> {console.log(v); return v}),
                     interprete<Primitive, HierarchicalInfo>(description, operations, {
                         delay: store.getState().interpretationDelay,
                         seed,
@@ -224,30 +164,6 @@ function useInterpretation(
                                         relation === HierarchicalRelation.Equal
                                     )
                                 })
-                                if (step.type === "operation") {
-                                    const identifier = step.identifier
-                                    if (
-                                        identifier === "createOb" ||
-                                        identifier === "pedestrian" ||
-                                        identifier === "cyclist" ||
-                                        identifier === "car" ||
-                                        identifier === "createFromPrimitive" ||
-                                        identifier === "moveRight" ||
-                                        identifier === "moveLeft" ||
-                                        identifier === "moveUp" ||
-                                        identifier === "moveDown" ||
-                                        identifier === "moveRotate" ||
-                                        identifier === "standStill" ||
-                                        identifier === "sample" ||
-                                        identifier === "moveUpAvoid" ||
-                                        identifier === "moveDownAvoid" ||
-                                        identifier === "moveRightAvoid" ||
-                                        identifier === "moveLeftAvoid" ||
-                                        identifier === "moveRotateAvoid"
-                                    ) {
-                                        value.raw.grammarSteps.push(step)
-                                    }
-                                }
                                 if (beforeValue != null) {
                                     afterStepSubject.next({
                                         steps: step,
@@ -281,7 +197,7 @@ function useInterpretation(
                                 }
                             },
                         },
-                    }),
+                    }), map(v=> {console.log(v); return v})
                 ),
                 name,
                 ref.current,
@@ -314,7 +230,6 @@ function useInterpretation(
                     console.error(error)
                     useViewerState.getState().setError(error.message)
                 },
-                setLoadingState
             )
         } catch (error: any) {
             useViewerState.getState().setError(error.message)
@@ -325,7 +240,7 @@ function useInterpretation(
             subscription?.unsubscribe()
             unsubscribeAfterStep?.unsubscribe()
         }
-    }, [store, description, seed, world])
+    }, [store, description, seed])
 }
 
 function toObject(primitive: Primitive): Object3D {
@@ -338,7 +253,6 @@ function toObject(primitive: Primitive): Object3D {
 
 function HighlightDescription({ description }: { description: string }) {
     const store = useBaseStore()
-    const setTime = useMovementStore((e) => e.setTime)
 
     const highlightedValues = store((state) => {
         if (state.type !== "gui") {
