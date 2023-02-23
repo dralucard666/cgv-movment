@@ -1,3 +1,4 @@
+import { toList } from "cgv/interpreter"
 import { v3 } from "murmurhash"
 import {
     delay,
@@ -36,9 +37,8 @@ import {
     ParsedSwitch,
     ParsedSymbol,
     ParsedUnaryOperator,
-} from "../parser"
-import { getNounIndex } from "../util"
-import { toList } from "./list"
+} from "../../../../src/parser/index"
+import { getNounIndex } from "../../../../src/util"
 
 export type Operation<T> = {
     execute: (parameters: Value<ReadonlyArray<T>>) => Array<Value<T>>
@@ -47,26 +47,44 @@ export type Operation<T> = {
 }
 
 export function simpleExecution<T>(
-    execute: (...parameters: ReadonlyArray<T>) => Array<T>
-): (parameters: Value<ReadonlyArray<T>>) => Array<Value<T>> {
+    execute: (...parameters: ReadonlyArray<T>) => Observable<Array<T>>
+): (parameters: Value<ReadonlyArray<T>>) => Observable<Array<Value<T>>> {
     return (parameters) =>
-        execute(...parameters.raw).map((result, i) => ({ ...parameters, raw: result, index: [...parameters.index, i] }))
+        execute(...parameters.raw).pipe(
+            map((results) =>
+                results.length === 1
+                    ? [
+                          {
+                              ...parameters,
+                              raw: results[0],
+                          },
+                      ]
+                    : results.map((result, i) => ({ ...parameters, raw: result, index: [...parameters.index, i] }))
+            )
+        )
 }
 
 export function simpleSceneExecution<T>(
     execute: (
         variables: {
-            [x: string]: any
+            [x: string]: Observable<any>
         },
         ...parameters: ReadonlyArray<T>
-    ) => Array<T>
-): (parameters: Value<ReadonlyArray<T>>) => Array<Value<T>> {
+    ) => Observable<Array<T>>
+): (parameters: Value<ReadonlyArray<T>>) => Observable<Array<Value<T>>> {
     return (parameters) =>
-        execute(parameters.variables, ...parameters.raw).map((result, i) => ({
-            ...parameters,
-            raw: result,
-            index: [...parameters.index, i],
-        }))
+        execute(parameters.variables, ...parameters.raw).pipe(
+            map((results) =>
+                results.length === 1
+                    ? [
+                          {
+                              ...parameters,
+                              raw: results[0],
+                          },
+                      ]
+                    : results.map((result, i) => ({ ...parameters, raw: result, index: [...parameters.index, i] }))
+            )
+        )
 }
 
 export type Operations<T> = {
@@ -447,7 +465,6 @@ const binaryOperations: { [Name in ParsedBinaryOperator["type"]]: (v1: any, v2: 
     unequal: (v1, v2) => v1 != v2,
 }
 
-//array of value<T>?
 export function toValue<T>(
     primitive: T,
     invalid?: Invalid,
@@ -482,6 +499,3 @@ export function toArray<T>(): OperatorFunction<Value<T>, ReadonlyArray<Value<T>>
         (list, index) => list.splice(index, 1)
     )
 }
-
-export * from "./matrix"
-export * from "./list"

@@ -135,7 +135,7 @@ describe("array datastructure", () => {
                             index: [10, 0],
                             invalid: createCompletedInvalid(),
                             variables: {},
-                            symbolDepth: {}
+                            symbolDepth: {},
                         },
                     ],
                     asyncScheduler
@@ -338,7 +338,7 @@ describe("interprete grammar", () => {
                     map((v) => values[v])
                 ),
             },
-            symbolDepth: {}
+            symbolDepth: {},
         }).pipe(
             interprete(
                 parse(` a --> this.x * b | 2 + this.x

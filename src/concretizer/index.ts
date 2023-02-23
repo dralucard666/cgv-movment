@@ -20,24 +20,20 @@ export async function deriveRandomOutputStepIndex<T>(
     options: InterpreterOptions<T, any>
 ): Promise<Map<ParsedSteps, Array<[inputIndex: string, selectedChildIndex: number]>>> {
     const fullIndicesMap = new Map<ParsedSteps, Array<[inputIndex: string, selectedChildIndex: number]>>()
-    await lastValueFrom(
-        of(baseValue).pipe(
-            toValue(),
-            interprete(grammar, operations, {
-                ...options,
-                listeners: {
-                    onRandom: (step, value, childIndex) => {
-                        let entries = fullIndicesMap.get(step)
-                        if (entries == null) {
-                            entries = []
-                            fullIndicesMap.set(step, entries)
-                        }
-                        entries.push([value.index.join(","), childIndex])
-                    },
-                },
-            })
-        )
-    )
+    const value = toValue(baseValue)
+    interprete([value], grammar, operations, {
+        ...options,
+        listeners: {
+            onRandom: (step, value, childIndex) => {
+                let entries = fullIndicesMap.get(step)
+                if (entries == null) {
+                    entries = []
+                    fullIndicesMap.set(step, entries)
+                }
+                entries.push([value.index.join(","), childIndex])
+            },
+        },
+    })
     return fullIndicesMap
 }
 

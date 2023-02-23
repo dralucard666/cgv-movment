@@ -14,27 +14,15 @@ export function DescriptionList({
     ...rest
 }: HTMLProps<HTMLDivElement> & { createDescriptionRequestData?: () => any }) {
     const store = useBaseStore()
-    const descriptions = store((state) => state.descriptions.filter((v) => v.domain === state.domain))
+    const descriptions = store((state) => state.descriptions)
     const selectedDescriptions = store((state) => state.selectedDescriptions)
     return (
         <div
             {...rest}
             style={style}
             className={`${className} bg-light rounded shadow w-100 overflow-hidden border d-flex flex-column`}>
-                <ul className="nav nav-tabs m-2 mb-3" style={{ fontSize: 15 }}>
-                    <button
-                        className={store.getState().domain === "movement" ? `nav-link active` : `nav-link`}
-                        onClick={() => store.getState().toggleDomain()}>
-                        Movement
-                    </button>
-                    <button
-                        className={store.getState().domain === "static" ? `nav-link active` : `nav-link`}
-                        onClick={() => store.getState().toggleDomain()}>
-                        Static
-                    </button>
-                </ul>
             <div className="px-3 py-2 border-bottom d-flex flex-row align-items-center">
-                <span>{store.getState().domain === "movement" ? "Movement" : "Static"} Descriptions</span>
+                <span>Descriptions</span>
                 <div className="flex-grow-1" />
                 <Tooltip align={{ offset: [0, 8] }} placement="top" overlay="Add Description">
                     <button
@@ -52,7 +40,7 @@ export function DescriptionList({
                     </button>
                 </Tooltip>
             </div>
-            <div className="d-flex flex-column scroll" style={{ overflow: "auto" }}>
+            <div className="d-flex flex-column scroll">
                 {descriptions.map(({ name, seed }, i) => (
                     <div
                         onClick={(e) => store.getState().selectDescription(name, store.getState().shift ?? false)}
