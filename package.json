@@ -9,7 +9,7 @@
         "fix:prettier": "prettier --write src/**/*.{ts,tsx}",
         "fix:eslint": "eslint src --fix",
         "test": "nyc mocha -r ts-node/register ./tests/*",
-        "tess": "nyc mocha -r ts-node/register ./web/src/domains/movement/tests.ts"
+        "test:interpreter": "nyc mocha -r ts-node/register ./tests/interpreter.ts"
     },
     "devDependencies": {
         "@types/chai": "^4.3.0",

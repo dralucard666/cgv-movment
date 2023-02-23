@@ -41,16 +41,15 @@ import { getNounIndex } from "../util"
 import { toList } from "./list"
 
 export type Operation<T> = {
-    execute: (parameters: Value<ReadonlyArray<T>>) => Array<Value<T>>
+    execute: (parametersExe: Value<ReadonlyArray<T>>) => Array<Value<T>>
     includeThis: boolean
     defaultParameters: Array<() => ParsedSteps>
 }
 
 export function simpleExecution<T>(
-    execute: (...parameters: ReadonlyArray<T>) => Array<T>
-): (parameters: Value<ReadonlyArray<T>>) => Array<Value<T>> {
-    return (parameters) =>
-        execute(...parameters.raw).map((result, i) => ({ ...parameters, raw: result, index: [...parameters.index, i] }))
+    execute: (...params: ReadonlyArray<T>) => Array<T>
+): (prms: Value<ReadonlyArray<T>>) => Array<Value<T>> {
+    return (prms) => execute(...prms.raw).map((result, i) => ({ ...prms, raw: result, index: [...prms.index, i] }))
 }
 
 export function simpleSceneExecution<T>(
@@ -58,9 +57,9 @@ export function simpleSceneExecution<T>(
         variables: {
             [x: string]: any
         },
-        ...parameters: ReadonlyArray<T>
+        ...parameters: ReadonlyArray<any>
     ) => Array<T>
-): (parameters: Value<ReadonlyArray<T>>) => Array<Value<T>> {
+): (parameters: Value<ReadonlyArray<T>>) => Array<Value<any>> {
     return (parameters) =>
         execute(parameters.variables, ...parameters.raw).map((result, i) => ({
             ...parameters,
@@ -162,7 +161,7 @@ export function interprete<T, I>(
         compiledGrammar,
         operations,
         ...options,
-        maxSymbolDepth: options.maxSymbolDepth ?? 100,
+        maxSymbolDepth: options.maxSymbolDepth ?? 50,
     }
     let newValue = value
     for (const { name, step } of grammar) {
@@ -254,8 +253,8 @@ function interpreteRandom<T, A, I>(
         i == 0 ? stepProb.push(curr) : stepProb.push(curr + stepProb[stepProb.length - 1])
     )
     value.forEach((v) => {
-        //const rand = v3(v.index.join(","), context.seed) / _32bit_max_int
-        const rand = Math.random()
+        const rand = v3(v.index.join(","), context.seed) / _32bit_max_int
+        //const rand = Math.random()
         const stepIndex = stepProb.findIndex((e) => rand <= e)
         if (stepIndex !== -1) {
             if (context.listeners?.onRandom != null) {
@@ -382,25 +381,19 @@ function interpreteOperation<T, I>(
     if (operation == null) {
         throw new Error(`unknown operation "${step.identifier}"`)
     }
-    const parameterOperatorFunctions = parameters.map((parameter) => interpreteStep(value, parameter, context))
-    if (operation.includeThis) {
-        parameterOperatorFunctions.unshift(value)
-    }
+    const parameterOperatorFunctions = parameters.map((parameter) => interpreteStep(value, parameter, context)[0])
 
-    //operation.execute(...parameterOperatorFunctions)
-    //const newVal = operatorsToArray(...parameterOperatorFunctions)
+    const newValue: Value<T>[] = []
 
-    return value
-    /*     return (values) =>
-        values.pipe(
-            operatorsToArray(...parameterOperatorFunctions),
-            mergeMap(
-                (value) =>
-                    operation
-                        .execute(value)
-                        .pipe(mergeMap((results) => merge(...results.map((result) => of(result).pipe(next))))) //TODO: simplifiable?
-            )
-        ) */
+    value.map((v) => {
+        const copy = [...parameterOperatorFunctions]
+        if (operation.includeThis) {
+            copy.unshift(v)
+        }
+        console.log(operation.execute(toValue(copy.map((v) => v.raw))))
+        newValue.push(...operation.execute(toValue(copy.map((v) => v.raw))))
+    })
+    return newValue
 }
 
 function interpreteRaw<T>(value: Value<T>[], step: ParsedRaw): Value<T>[] {

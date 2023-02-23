@@ -13,6 +13,7 @@ import { interprete, toValue } from "cgv"
 
 export function Descriptions() {
     const toVal = toValue(4, undefined, undefined, [])
-    const result = interprete([toVal], parse(`a --> (5 | 6) -> { 25%: 1 25%: 2 25%: 3 25%: 4 }`), {}, {}) //.map((values) => values.map(({ raw }) => raw))
+    //const result = interprete([toVal], parse(`a --> (5 | 6) -> { 25%: 1 25%: 2 25%: 3 25%: 4 }`), {}, {}) //.map((values) => values.map(({ raw }) => raw))
+    const result = interprete([toValue(1)], parse(`a --> 10`), {}, {})?.map((v) => v.raw)
     console.log(result)
 }
