@@ -93,22 +93,13 @@ export function valuesToChanges<T>(): OperatorFunction<Value<T>, MatrixChange<Va
     return (value) =>
         value.pipe(
             mergeMap((value) =>
-                value.invalid.value
-                    ? NEVER
-                    : merge(
-                          of({
-                              index: value.index,
-                              type: ChangeType.SET,
-                              value: value,
-                          }),
-                          value.invalid.observable.pipe(
-                              take(1),
-                              mapTo<MatrixChange<Value<T>>>({
-                                  index: value.index,
-                                  type: ChangeType.UNSET,
-                              })
-                          )
-                      )
+                merge(
+                    of({
+                        index: value.index,
+                        type: ChangeType.SET,
+                        value: value,
+                    })
+                )
             )
         )
 }

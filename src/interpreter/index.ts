@@ -72,48 +72,8 @@ export type Operations<T> = {
     [Name in string]: Operation<T>
 }
 
-function anyInvalid(values: Array<Invalid>) {
-    for (const entry of values) {
-        if (entry.value) {
-            return true
-        }
-    }
-    return false
-}
-
-export type Invalid = {
-    get observable(): Observable<void>
-    get value(): boolean
-}
-
-export type Invalidator = Invalid & { invalidate: () => void; complete: () => void }
-
-export function createInvalidator(): Invalidator {
-    const subject = new ReplaySubject<void>(1)
-    const invalid = {
-        invalidate: () => {
-            invalid.value = true
-            subject.next()
-        },
-        complete: () => subject.complete(),
-        observable: subject,
-        value: false,
-    }
-    return invalid
-}
-
-export function combineInvalids(...invalids: Array<Invalid>): Invalid {
-    return {
-        observable: merge(...invalids.map(({ observable }) => observable)).pipe(
-            shareReplay({ refCount: true, bufferSize: 1 })
-        ),
-        value: anyInvalid(invalids),
-    }
-}
-
 export type Value<T> = {
     raw: T
-    invalid: Invalid
     index: Array<number>
     variables: {
         [Name in string]: any
@@ -145,6 +105,8 @@ type InterpretionContext<T, I> = Readonly<
 
 type CompiledGrammar<T> = { [Name in string]: Value<T> }
 
+type AbstractParsedStepsTime<I> = AbstractParsedSteps<I> & { time: number }
+
 export function interprete<T, I>(
     value: Value<T>[],
     grammar: AbstractParsedGrammarDefinition<I>,
@@ -163,10 +125,10 @@ export function interprete<T, I>(
         ...options,
         maxSymbolDepth: options.maxSymbolDepth ?? 50,
     }
-    let newValue = value
+    const newValue = [] as Value<T>[]
     for (const { name, step } of grammar) {
-        console.log(step)
-        newValue = interpreteStep(newValue, step, context)
+        newValue.push(...interpreteStep(value, step, context))
+        console.log(newValue)
     }
     return newValue
 }
@@ -249,9 +211,13 @@ function interpreteRandom<T, A, I>(
     const newValue = [] as Value<T>[]
 
     const stepProb: number[] = []
-    step.probabilities.forEach((curr, i) =>
-        i == 0 ? stepProb.push(curr) : stepProb.push(curr + stepProb[stepProb.length - 1])
-    )
+    for (let i = 0; i < step.probabilities.length; i++) {
+        if (i == 0) {
+            stepProb.push(step.probabilities[i])
+        } else {
+            stepProb.push(step.probabilities[i] + stepProb[stepProb.length - 1])
+        }
+    }
     value.forEach((v) => {
         const rand = v3(v.index.join(","), context.seed) / _32bit_max_int
         //const rand = Math.random()
@@ -289,14 +255,13 @@ function interpreteSwitch<T, I>(value: Value<T>[], step: ParsedSwitch, context: 
     //const casesOperatorFunctions = step.children.slice(1).map((child) => interpreteStep(child, context, next))
     let newValue = value
     const conditionOperatorValue = interpreteStep(value, step.children[0], context)[0]
-    step.cases.forEach((v, i) => {
-        if (v.some((e) => e === conditionOperatorValue.raw)) {
-            /*             if (step.children.length<=i+1){
-                throw new Error(`parsing error`)
-            } */
+    for (let i = 0; i < step.cases.length; i++) {
+        const currentStep = step.cases[i]
+        if (currentStep.some((e) => e === conditionOperatorValue.raw)) {
             newValue = interpreteStep(newValue, step.children[i + 1], context)
         }
-    })
+    }
+
     return newValue
 }
 
@@ -390,7 +355,7 @@ function interpreteOperation<T, I>(
         if (operation.includeThis) {
             copy.unshift(v)
         }
-        console.log(operation.execute(toValue(copy.map((v) => v.raw))))
+        //console.log(operation.execute(toValue(copy.map((v) => v.raw))))
         newValue.push(...operation.execute(toValue(copy.map((v) => v.raw))))
     })
     return newValue
@@ -441,17 +406,10 @@ const binaryOperations: { [Name in ParsedBinaryOperator["type"]]: (v1: any, v2: 
 }
 
 //array of value<T>?
-export function toValue<T>(
-    primitive: T,
-    invalid?: Invalid,
-    index?: Array<number>,
-    variables?: Value<T>["variables"][]
-): Value<T> {
-    const prevInvalid = createInvalidator()
+export function toValue<T>(primitive: T, index?: Array<number>, variables?: Value<T>["variables"][]): Value<T> {
     return {
         raw: primitive,
         index: index ?? [],
-        invalid: prevInvalid,
         variables: variables ?? {},
         symbolDepth: {},
     }
