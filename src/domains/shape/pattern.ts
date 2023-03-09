@@ -29,6 +29,7 @@ export const directionSelectionPattern: PatternType<Primitive> = {
                         type: "operation",
                         children: [],
                         identifier: "direction",
+                        changesTime: false,
                     },
                     {
                         type: "raw",
@@ -52,6 +53,7 @@ export const directionSelectionPattern: PatternType<Primitive> = {
                         type: "operation",
                         children: [],
                         identifier: "direction",
+                        changesTime: false,
                     },
                     {
                         type: "raw",

@@ -75,6 +75,7 @@ function concretizeRandomStep(
                     type: "operation",
                     children: [],
                     identifier: "id",
+                    changesTime: false,
                 },
                 ...children,
             ],

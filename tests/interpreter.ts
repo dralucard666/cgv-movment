@@ -3,9 +3,7 @@ import chaiAsPromised from "chai-as-promised"
 import {
     applyChangeToMatrix,
     ChangeType,
-    createInvalidator,
     interprete,
-    Invalid,
     Matrix,
     parse,
     shallowEqual,
@@ -82,19 +80,6 @@ describe("matrix datastructure", () => {
         expect(matrix).to.deep.equal([undefined, [4]])
     })
 })
-
-function createCompletedInvalid(): Invalid {
-    return {
-        value: false,
-        observable: EMPTY,
-    }
-}
-
-function createInvalidAndInvalidateAfter(ms: number) {
-    const invalidator = createInvalidator()
-    setTimeout(invalidator.invalidate, ms)
-    return invalidator
-}
 
 /*  describe("array datastructure", () => {
     it("should handle changes from observable and output the updated array", async () => {
@@ -179,6 +164,7 @@ describe("interprete grammar", () => {
                     execute: simpleExecution<any>((num: number, str: any) => [`${str ?? ""}${num * num}`]),
                     includeThis: false,
                     defaultParameters: [],
+                    changesTime: false,
                 },
             },
             {}
@@ -195,6 +181,7 @@ describe("interprete grammar", () => {
                     execute: simpleExecution((current: number, num: number, str: any) => [current, str, num * num]),
                     includeThis: true,
                     defaultParameters: [],
+                    changesTime: false,
                 },
             },
             {}

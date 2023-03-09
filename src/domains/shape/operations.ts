@@ -162,6 +162,7 @@ export const operations: Operations<any> = {
     translate: {
         execute: simpleExecution<any>(computeTranslate),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
@@ -171,6 +172,7 @@ export const operations: Operations<any> = {
     scale: {
         execute: simpleExecution<any>(computeScale),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({ type: "raw", value: 1 }),
             () => ({ type: "raw", value: 1 }),
@@ -180,6 +182,7 @@ export const operations: Operations<any> = {
     rotate: {
         execute: simpleExecution<any>(computeRotate),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
@@ -189,11 +192,13 @@ export const operations: Operations<any> = {
     extrude: {
         execute: simpleExecution<any>(computeExtrude),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 1 })],
     },
     split: {
         execute: simpleExecution<any>(computeSplit),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({ type: "raw", value: "x" }),
             () => ({ type: "raw", value: true }),
@@ -203,31 +208,37 @@ export const operations: Operations<any> = {
     toPoints: {
         execute: simpleExecution<any>(computeComponents.bind(null, "points")),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     toLines: {
         execute: simpleExecution<any>(computeComponents.bind(null, "lines")),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     toFaces: {
         execute: simpleExecution<any>(computeComponents.bind(null, "faces")),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     sample: {
         execute: simpleExecution<any>(computeSample),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 10 })],
     },
     color: {
         execute: simpleExecution<any>(computeColorChange),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: "#ff0000" })],
     },
     size: {
         execute: simpleExecution<any>(computeSize),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: "x" })],
     },
     /*mapbox: {
@@ -238,16 +249,19 @@ export const operations: Operations<any> = {
     expandGraph: {
         execute: simpleExecution<any>(computeGraphExpand),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 3 })],
     },
     load: {
         execute: simpleExecution<any>(computeLoad),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     point3: {
         execute: simpleExecution<any>(computePoint3),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
@@ -257,15 +271,18 @@ export const operations: Operations<any> = {
     point2: {
         execute: simpleExecution<any>(computePoint2),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 0 })],
     },
     line: {
         execute: simpleExecution<any>(computeLine),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 0 },
                     { type: "raw", value: 0 },
@@ -275,6 +292,7 @@ export const operations: Operations<any> = {
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 1 },
                     { type: "raw", value: 0 },
@@ -286,11 +304,13 @@ export const operations: Operations<any> = {
     face: {
         execute: simpleExecution<any>(computeFace),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     gableRoof: {
         execute: simpleExecution<any>(computeGableRoof),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [
             () => ({
                 type: "raw",
@@ -301,6 +321,7 @@ export const operations: Operations<any> = {
     direction: {
         execute: simpleExecution<any>(computeDirection),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
 }

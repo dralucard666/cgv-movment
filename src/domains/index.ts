@@ -22,6 +22,7 @@ export const defaultOperations: Operations<any> = {
             ]
         },
         includeThis: false,
+        changesTime: false,
         defaultParameters: [],
     },
     id: {
@@ -34,6 +35,7 @@ export const defaultOperations: Operations<any> = {
             ]
         },
         includeThis: false,
+        changesTime: false,
         defaultParameters: [],
     },
     log: {
@@ -46,6 +48,7 @@ export const defaultOperations: Operations<any> = {
             ]
         },
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     select: {
@@ -64,11 +67,13 @@ export const defaultOperations: Operations<any> = {
                 : []
         },
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 1 }), () => ({ type: "raw", value: 2 })],
     },
     randomFloat: {
         execute: simpleExecution((min: number, max: number) => [min + (max - min) * Math.random()]),
         includeThis: false,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 1 })],
     },
 }

@@ -1,5 +1,13 @@
 import { expose } from "comlink"
-import { AbstractParsedGrammarDefinition, interprete, InterpreterOptions, Operations, toValue, Value } from "cgv"
+import {
+    AbstractParsedGrammarDefinition,
+    interprete,
+    InterpreterOptions,
+    Operations,
+    simpleExecution,
+    toValue,
+    Value,
+} from "cgv"
 import { operations } from "cgv/domains/movement/operations"
 
 function runInterprete<T, I>(
@@ -7,20 +15,22 @@ function runInterprete<T, I>(
     grammar: AbstractParsedGrammarDefinition<I>,
     options: InterpreterOptions<T, I>
 ) {
-    const result = interprete<any, any>(value, grammar, operations, options)
-    //console.log(result)
-    bigTask(100000000)
+    const result = interprete<any, any>(
+        value,
+        grammar,
+        {
+            ...operations,
+            op1: {
+                execute: simpleExecution<any>((num: number, str: any) => [`${str ?? ""}${num * num}`]),
+                includeThis: false,
+                defaultParameters: [],
+                changesTime: false,
+            },
+        },
+        options
+    )
 
     return result
-}
-
-const bigTask = (int: number) => {
-    const sum = new Array(int)
-        .fill(0)
-        .map((el, idx) => el + idx)
-        .reduce((sum, el) => sum + el, 0)
-
-    //console.log(sum)
 }
 
 const worker = {

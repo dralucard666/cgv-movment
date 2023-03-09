@@ -191,10 +191,12 @@ export const operations: Operations<any> = {
     createOb: {
         execute: simpleSceneExecution<any>(createObject),
         includeThis: false,
+        changesTime: true,
         defaultParameters: [
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 0 },
                     { type: "raw", value: 0 },
@@ -209,10 +211,12 @@ export const operations: Operations<any> = {
     pedestrian: {
         execute: simpleSceneExecution<any>(createPedestrian),
         includeThis: false,
+        changesTime: true,
         defaultParameters: [
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 0 },
                     { type: "raw", value: 0 },
@@ -226,10 +230,12 @@ export const operations: Operations<any> = {
     cyclist: {
         execute: simpleSceneExecution<any>(createCyclist),
         includeThis: false,
+        changesTime: true,
         defaultParameters: [
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 0 },
                     { type: "raw", value: 0 },
@@ -243,10 +249,12 @@ export const operations: Operations<any> = {
     car: {
         execute: simpleSceneExecution<any>(createCar),
         includeThis: false,
+        changesTime: true,
         defaultParameters: [
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 0 },
                     { type: "raw", value: 0 },
@@ -260,6 +268,7 @@ export const operations: Operations<any> = {
     createFromPrimitive: {
         execute: simpleSceneExecution<any>(createObjectOfPrimitive),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
@@ -269,6 +278,7 @@ export const operations: Operations<any> = {
     point3: {
         execute: simpleExecution<any>(computePoint3),
         includeThis: false,
+        changesTime: false,
         defaultParameters: [
             () => ({ type: "raw", value: 0 }),
             () => ({ type: "raw", value: 0 }),
@@ -278,75 +288,90 @@ export const operations: Operations<any> = {
     moveRight: {
         execute: simpleExecution<any>(computeMoveRight),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveLeft: {
         execute: simpleExecution<any>(computeMoveLeft),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveUp: {
         execute: simpleExecution<any>(computeMoveUp),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveDown: {
         execute: simpleExecution<any>(computeMoveDown),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveUpAvoid: {
         execute: simpleExecution<any>(upAvoid),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveDownAvoid: {
         execute: simpleExecution<any>(downAvoid),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveRightAvoid: {
         execute: simpleExecution<any>(rightAvoid),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveLeftAvoid: {
         execute: simpleExecution<any>(leftAvoid),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 50 })],
     },
     moveRotate: {
         execute: simpleExecution<any>(computeMoveRotate),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 50 })],
     },
     moveRotateAvoid: {
         execute: simpleExecution<any>(computeMoveRotateAvoid),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 50 })],
     },
     standStill: {
         execute: simpleExecution<any>(computeStandStill),
         includeThis: true,
+        changesTime: true,
         defaultParameters: [],
     },
     distanceToStatic: {
         execute: simpleExecution<any>(distanceToStatic),
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     sample: {
         execute: simpleSceneExecution<any>(computeSample),
         includeThis: false,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 10 })],
     },
     cube: {
         execute: simpleExecution<any>(addCubengle),
         includeThis: false,
+        changesTime: false,
         defaultParameters: [
             () => ({
                 type: "operation",
                 identifier: "point3",
+                changesTime: false,
                 children: [
                     { type: "raw", value: 1 },
                     { type: "raw", value: 0 },
@@ -359,6 +384,7 @@ export const operations: Operations<any> = {
     multipleStatic: {
         execute: simpleExecution<any>(computeMultipleStatic),
         includeThis: false,
+        changesTime: false,
         defaultParameters: [],
     },
 }
