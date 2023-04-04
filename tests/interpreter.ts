@@ -27,6 +27,8 @@ import {
 } from "rxjs"
 import { wrap } from "comlink"
 import { operations } from "../src/domains/movement"
+import Worker from "web-worker"
+
 chai.use(chaiAsPromised)
 
 describe("matrix datastructure", () => {
@@ -149,7 +151,13 @@ describe("matrix datastructure", () => {
 describe("interprete grammar", () => {
     it("should interprete sequential execution", async () => {
         //let result
-        self.onmessage = (e) => {
+
+        const worker = new Worker(new URL("../dist/interpreter/workers", import.meta.url), {
+            name: "workerInterprete",
+            type: "module",
+        })
+
+        worker.onmessage = (e) => {
             if (e.data.type) {
                 if (e.data.type == "result") {
                     console.log(e.data.data)
@@ -157,7 +165,9 @@ describe("interprete grammar", () => {
             }
         }
 
-        await interprete([toValue(4, undefined, [])], parse(`a --> 10 -> this * 10 -> this + 1`), operations, {}, 0, 0)
+        const workerInterprete = wrap<import("../dist/interpreter/workers").WorkerInterprete>(worker).workerInterprete
+
+        await workerInterprete([toValue(4, undefined, [])], parse(`a --> 10 -> this * 10 -> this + 1`), {}, 0, 0)
 
         //expect(result).to.deep.equal([101])
     })

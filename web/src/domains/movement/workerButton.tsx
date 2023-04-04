@@ -5,6 +5,7 @@ import { interprete, simpleExecution, toValue, Value } from "cgv"
 import { wrap, proxy } from "comlink"
 import { operations } from "cgv/domains/movement/operations"
 import { Dispatch, SetStateAction, useEffect, useState } from "react"
+import Worker from 'web-worker';
 
 export function Workerbutton() {
     /*  const worker = new Worker(new URL("./workers", import.meta.url), {

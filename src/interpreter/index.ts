@@ -162,7 +162,7 @@ export async function interprete<T, I>(
         }
     }
 
-    self.onmessage = (e) => {
+    onmessage = (e) => {
         if (e.data.type == "updateTime") {
             const newTime = e.data.data
             videoTime = newTime
@@ -189,12 +189,12 @@ export async function interprete<T, I>(
             currentTimeThreshhold = currentTimeThreshhold + returnTimeInterval
             onBufferEndUpdate = false
             const currentResult = queue.map((v) => v.value).concat(resultsFinal)
-            self.postMessage({ type: "result", data: currentResult, jobId })
+            postMessage({ type: "result", data: currentResult, jobId })
         }
 
         await Sleep(0)
     }
-    self.postMessage({ type: "result", data: resultsFinal, jobId })
+    postMessage({ type: "result", data: resultsFinal, jobId })
 
     return
 }
