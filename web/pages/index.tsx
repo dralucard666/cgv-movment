@@ -28,6 +28,7 @@ import {
 import { Descriptions } from "../src/domains/movement/description"
 import { DescriptionList } from "../src/gui/description-list"
 import { GUI } from "../src/gui"
+import { Workerbutton } from "../src/domains/movement/workerButton"
 
 const zoom = 18
 
@@ -63,7 +64,6 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
     const Bridge = useContextBridge(domainContext)
     const store = useBaseStore()
 
-
     return (
         <Suspense fallback={null}>
             <div
@@ -89,7 +89,7 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                     })}
                     dpr={global.window == null ? 1 : window.devicePixelRatio}>
                     <Bridge>
-                        <Descriptions />
+                        {/* <Descriptions /> */}
                         <PerspectiveCamera makeDefault far={10000} />
                         <CameraController />
                     </Bridge>
@@ -109,7 +109,8 @@ export function Viewer({ className, children, ...rest }: HTMLProps<HTMLDivElemen
                             createDescriptionRequestData={() => ({})}
                             style={{ pointerEvents: "all" }}
                             className="mb-3">
-                             <div className="p-2 border-top border-1">
+                            <Workerbutton/>
+                            <div className="p-2 border-top border-1">
                                 <SummarizeButton />
                             </div>
                         </DescriptionList>

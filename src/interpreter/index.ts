@@ -40,6 +40,7 @@ import {
 import { getNounIndex } from "../util"
 import { toList } from "./list"
 import { interpreteQueueStep } from "./queueInterpreter"
+import { expose } from "comlink"
 
 export type Operation<T> = {
     execute: (parametersExe: Value<ReadonlyArray<T>>) => Array<Value<T>>
@@ -109,18 +110,35 @@ type CompiledGrammar<T> = { [Name in string]: Value<T> }
 
 export type AbstractParsedStepsTime<I> = { time: number; step: AbstractParsedSteps<I>; value: Value<any> }
 
+export type WorkerPutData = { type: "updateTime"; data: number }
+
+export type WorkerGetData = { type: "result"; data: any }
+
 export const queue = [] as AbstractParsedStepsTime<any>[]
 export const resultsFinal: Value<any>[] = []
+const videoTime = 0
 
-export function interprete<T, I>(
+export function Sleep(milliseconds: number) {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds))
+}
+
+export async function interprete<T, I>(
     value: Value<T>[],
     grammar: AbstractParsedGrammarDefinition<I>,
     operations: Operations<T>,
-    options: InterpreterOptions<T, I>
-): Value<T>[] | null {
+    options: InterpreterOptions<T, I>,
+    jobId: number,
+    videoTime: number
+): Promise<void> {
     if (grammar.length === 0) {
-        return null
+        return
     }
+
+    const returnTimeInterval = 1
+    const bufferThreshold = 3
+    let onBufferEndUpdate = true
+    let currentTimeThreshhold = videoTime + 1
+
     const startSymbolName = grammar[0].name
     const compiledGrammar: CompiledGrammar<T> = {}
     const context: InterpretionContext<T, I> = {
@@ -143,28 +161,43 @@ export function interprete<T, I>(
             queue.push({ time, step, value: values })
         }
     }
+
+    self.onmessage = (e) => {
+        if (e.data.type == "updateTime") {
+            const newTime = e.data.data
+            videoTime = newTime
+        }
+    }
+
     while (queue.length > 0) {
-        const newItem = queue.shift()
-        if (newItem) {
-            if (resultsFinal.length > 0) {
-                self.postMessage(resultsFinal)
-                resultsFinal.splice(0, resultsFinal.length)
-            }
+        const bufferTime = videoTime + bufferThreshold
+
+        if (queue[0].time < bufferTime) {
+            const newItem = queue.shift()
+            onBufferEndUpdate = true
             interpreteQueueStep(
-                newItem.value,
-                newItem.step,
+                newItem!.value,
+                newItem!.step,
                 context,
                 ["name"],
                 { type: "sequential", children: [] },
-                newItem.time
+                newItem!.time
             )
         }
+
+        if (queue[0].time >= currentTimeThreshhold && onBufferEndUpdate) {
+            currentTimeThreshhold = currentTimeThreshhold + returnTimeInterval
+            onBufferEndUpdate = false
+            const currentResult = queue.map((v) => v.value).concat(resultsFinal)
+            self.postMessage({ type: "result", data: currentResult, jobId })
+        }
+
+        await Sleep(0)
     }
-    self.postMessage(resultsFinal)
+    self.postMessage({ type: "result", data: resultsFinal, jobId })
 
-    return resultsFinal
+    return
 }
-
 export function interpreteStep<T, I>(
     value: Value<T>[],
     step: AbstractParsedSteps<I>,
@@ -252,7 +285,8 @@ function interpreteRandom<T, A, I>(
             stepProb.push(step.probabilities[i] + stepProb[stepProb.length - 1])
         }
     }
-    value.forEach((v) => {
+
+    for (const [index, v] of value.entries()) {
         const rand = v3(v.index.join(","), context.seed) / _32bit_max_int
         //const rand = Math.random()
         const stepIndex = stepProb.findIndex((e) => rand <= e)
@@ -264,7 +298,7 @@ function interpreteRandom<T, A, I>(
             const interpreVals = interpreteStep([v], step.children[stepIndex], context, [...path, stepIndex])
             newValue.push(...interpreVals)
         }
-    })
+    }
     return newValue
 }
 
@@ -299,6 +333,7 @@ function interpreteSwitch<T, I>(
         const currentStep = step.cases[i]
         if (currentStep.some((e) => e === conditionOperatorValue.raw)) {
             newValue = interpreteStep(newValue, step.children[i + 1], context, [...path, i + 1])
+            break
         }
     }
 

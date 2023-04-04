@@ -21,19 +21,26 @@ export async function deriveRandomOutputStepIndex<T>(
 ): Promise<Map<ParsedSteps, Array<[inputIndex: string, selectedChildIndex: number]>>> {
     const fullIndicesMap = new Map<ParsedSteps, Array<[inputIndex: string, selectedChildIndex: number]>>()
     const value = toValue(baseValue)
-    interprete([value], grammar, operations, {
-        ...options,
-        listeners: {
-            onRandom: (step, value, childIndex) => {
-                let entries = fullIndicesMap.get(step)
-                if (entries == null) {
-                    entries = []
-                    fullIndicesMap.set(step, entries)
-                }
-                entries.push([value.index.join(","), childIndex])
+    interprete(
+        [value],
+        grammar,
+        operations,
+        {
+            ...options,
+            listeners: {
+                onRandom: (step, value, childIndex) => {
+                    let entries = fullIndicesMap.get(step)
+                    if (entries == null) {
+                        entries = []
+                        fullIndicesMap.set(step, entries)
+                    }
+                    entries.push([value.index.join(","), childIndex])
+                },
             },
         },
-    })
+        0,
+        0
+    )
     return fullIndicesMap
 }
 

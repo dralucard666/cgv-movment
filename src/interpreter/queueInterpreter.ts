@@ -35,6 +35,7 @@ export function interpreteQueueStep<T, I>(
     nextOperations: ParsedSequantial,
     currentTime: number
 ) {
+    //listener on afterstep und beforestep fehlt
     translateQueueStep(value, step, context, path, nextOperations, currentTime)
 
     return
@@ -389,9 +390,19 @@ function interpreteQueueOperation<T, I>(
     let time = currentTime
     newValue.push(...operation.execute(toValue(copy.map((v) => v.raw))))
     const singleVal = newValue[0].raw
+
+    //hardcoden ob attribute time auf object ist, wenn ja diesen Wert für queue nehmen
     if (typeof singleVal === "object" && !Array.isArray(singleVal) && singleVal !== null) {
-        if ("time" in singleVal) {
-            time = (singleVal as any).time as number
+        if ("position" in singleVal) {
+            const position = (singleVal as any).position
+            if (Array.isArray(position)) {
+                const lastElement = position[position.length - 1]
+                if (typeof lastElement === "object" && !Array.isArray(lastElement) && lastElement !== null) {
+                    if ("time" in lastElement) {
+                        time = (lastElement as any).time as number
+                    }
+                }
+            }
         }
     }
 
