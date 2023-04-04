@@ -67,6 +67,7 @@ export type AbstractParsedOperation<T> = {
     type: "operation"
     children: Array<AbstractParsedSteps<T>>
     identifier: string
+    changesTime: boolean
 } & T
 export type AbstractParsedSymbol<T> = {
     type: "symbol"

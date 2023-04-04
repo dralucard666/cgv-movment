@@ -21,7 +21,7 @@ export function computeGableRoof(
     width?: number,
     height?: number,
     depth?: number
-): Observable<Array<Primitive>> {
+): Array<Primitive> {
     const yRotation = rotation == null ? 0 : (Math.PI * rotation) / 180
     const matrix = makeRotationMatrix(0, -yRotation, 0)
     box3Helper.setFromPoints(instance.getVertecies().map((vertex) => vertex.applyMatrix4(matrix)))
@@ -30,5 +30,5 @@ export function computeGableRoof(
     geometry.translate(box3Helper.min.x, box3Helper.min.y, box3Helper.min.z)
     geometry.computeBoundingBox()
     geometry.rotateY(yRotation)
-    return of([new GeometryPrimitive(instance.matrix, geometry, instance.materialGenerator)])
+    return [new GeometryPrimitive(instance.matrix, geometry, instance.materialGenerator)]
 }

@@ -14,38 +14,41 @@ export const defaultOperations: Operations<any> = {
             const indexIndex =
                 value.raw.length > 0 ? (value.raw[0] + value.index.length) % value.index.length : value.index.length - 1
             const index = value.index[indexIndex] ?? 0
-            return of([
+            return [
                 {
                     ...value,
                     raw: index,
                 },
-            ])
+            ]
         },
         includeThis: false,
+        changesTime: false,
         defaultParameters: [],
     },
     id: {
         execute: (value) => {
-            return of([
+            return [
                 {
                     ...value,
                     raw: value.index.join(","),
                 },
-            ])
+            ]
         },
         includeThis: false,
+        changesTime: false,
         defaultParameters: [],
     },
     log: {
         execute: (value) => {
-            return of([
+            return [
                 {
                     ...value,
                     raw: value.raw[0],
                 },
-            ])
+            ]
         },
         includeThis: true,
+        changesTime: false,
         defaultParameters: [],
     },
     select: {
@@ -54,23 +57,23 @@ export const defaultOperations: Operations<any> = {
                 value.raw.length > 0 ? (value.raw[0] + value.index.length) % value.index.length : value.index.length - 1
             const index = value.index[indexIndex] ?? 0
             const [current, min, max] = value.raw
-            return of(
-                min <= index && (max == null || index < max)
-                    ? [
-                          {
-                              ...value,
-                              raw: current,
-                          },
-                      ]
-                    : []
-            )
+            return min <= index && (max == null || index < max)
+                ? [
+                      {
+                          ...value,
+                          raw: current,
+                      },
+                  ]
+                : []
         },
         includeThis: true,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 1 }), () => ({ type: "raw", value: 2 })],
     },
     randomFloat: {
-        execute: simpleExecution((min: number, max: number) => of([min + (max - min) * Math.random()])),
+        execute: simpleExecution((min: number, max: number) => [min + (max - min) * Math.random()]),
         includeThis: false,
+        changesTime: false,
         defaultParameters: [() => ({ type: "raw", value: 0 }), () => ({ type: "raw", value: 1 })],
     },
 }

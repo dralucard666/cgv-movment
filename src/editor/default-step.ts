@@ -125,6 +125,7 @@ export function createDefaultStep<T>(descriptor: StepDescriptor, operations: Ope
                 type: descriptor.type,
                 children: operation.defaultParameters.map((generator) => generator()),
                 identifier: descriptor.identifier,
+                changesTime: operation.changesTime,
             }
         }
         case "raw":

@@ -40,6 +40,7 @@ const getValueIndexModuloCondition = (value: Value<any>, modulo: number): Parsed
                     type: "operation",
                     children: [],
                     identifier: "index",
+                    changesTime: false,
                 },
                 {
                     type: "raw",
@@ -154,6 +155,7 @@ export const indexPatternType: PatternType<any> = {
                         type: "operation",
                         children: [],
                         identifier: "index",
+                        changesTime: false,
                     },
                     {
                         type: "raw",
@@ -176,6 +178,7 @@ export const indexPatternType: PatternType<any> = {
                         type: "operation",
                         children: [],
                         identifier: "index",
+                        changesTime: false,
                     },
                     {
                         type: "raw",
@@ -202,6 +205,7 @@ function computeIndexComparisonPattern(
                     type: "operation",
                     children: [],
                     identifier: "index",
+                    changesTime: false,
                 },
                 {
                     type: "raw",
@@ -275,6 +279,7 @@ export const idPatternType: PatternType<any> = {
                         type: "operation",
                         children: [],
                         identifier: "id",
+                        changesTime: false,
                     },
                     {
                         type: "raw",

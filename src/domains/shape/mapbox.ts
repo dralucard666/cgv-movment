@@ -138,9 +138,11 @@ function convertPolygonStreetToSteps(
             return {
                 type: "operation",
                 identifier: "line",
+                changesTime: false,
                 children: [p1, p2].map(({ x, y }) => ({
                     type: "operation",
                     identifier: "point2",
+                    changesTime: false,
                     children: [
                         {
                             type: "raw",
@@ -273,6 +275,7 @@ function convertPolygonLotToSteps(
         children[i] = {
             type: "operation",
             identifier: "point2",
+            changesTime: false,
             children: [
                 {
                     type: "raw",
@@ -288,6 +291,7 @@ function convertPolygonLotToSteps(
     return {
         type: "operation",
         identifier: "face",
+        changesTime: false,
         children,
     }
 }
