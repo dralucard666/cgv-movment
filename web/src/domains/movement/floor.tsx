@@ -28,7 +28,7 @@ export default function Floor(props: { world: WorldState }) {
             </mesh>  */}
             <Clone ref={floor} rotation={rotation} object={scene.scene} scale={world.scale} position={world.position} />
             <ambientLight intensity={1} />
-            <Environment preset={"sunset"} />{" "}
+            <Environment path="./textures/" files="venice_sunset_1k.hdr" />{" "}
         </>
     )
 }
